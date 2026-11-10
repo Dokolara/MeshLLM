@@ -194,17 +194,20 @@ class P2PServer(
                     }
                 }
 
-                // Read body if present
+                // AETHER-LINK: Read body safely by bytes (handling multi-byte UTF-8 without socket hang)
                 val contentLength = headers["content-length"]?.toIntOrNull() ?: 0
                 val body = if (contentLength > 0) {
-                    val chars = CharArray(contentLength)
+                    val buffer = StringBuilder(contentLength)
                     var readTotal = 0
+                    val chunk = CharArray(minOf(4096, contentLength))
                     while (readTotal < contentLength) {
-                        val r = input.read(chars, readTotal, contentLength - readTotal)
+                        val toRead = minOf(chunk.size, contentLength - readTotal)
+                        val r = input.read(chunk, 0, toRead)
                         if (r == -1) break
-                        readTotal += r
+                        buffer.append(chunk, 0, r)
+                        readTotal += String(chunk, 0, r).toByteArray(Charsets.UTF_8).size
                     }
-                    String(chars, 0, readTotal)
+                    buffer.toString()
                 } else {
                     ""
                 }

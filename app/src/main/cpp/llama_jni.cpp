@@ -368,6 +368,10 @@ static std::string decode_token_to_piece(llama_token token) {
     if (piece.empty()) {
         piece = common_token_to_piece(vocab, token, true);
     }
+    // LEXICON-CORE: Sanitize special control tokens (e.g. Tekken [control_XX]) from leaking into text stream
+    if (piece.rfind("[control_", 0) == 0 && !piece.empty() && piece.back() == ']') {
+        return "";
+    }
     return piece;
 }
 
@@ -635,7 +639,7 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativePrefillPipeline(
                 common_sampler_accept(g_sampler, sampled, true);
 
                 const llama_vocab * vocab = llama_model_get_vocab(g_model);
-                bool is_finished = llama_vocab_is_eog(vocab, sampled) || (sampled == 2 || sampled == 0);
+                bool is_finished = llama_vocab_is_eog(vocab, sampled);
                 std::string piece = decode_token_to_piece(sampled);
                 LOGi("nativePrefillPipeline (single): sampled token %d, piece: '%s' (len %zu), is_finished: %d",
                      (int) sampled, piece.c_str(), piece.size(), (int) is_finished);
@@ -693,7 +697,7 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativePrefillPipeline(
                 common_sampler_accept(g_sampler, sampled, true);
 
                 const llama_vocab * vocab = llama_model_get_vocab(g_model);
-                bool is_finished = llama_vocab_is_eog(vocab, sampled) || (sampled == 2 || sampled == 0);
+                bool is_finished = llama_vocab_is_eog(vocab, sampled);
                 std::string piece = decode_token_to_piece(sampled);
                 LOGi("nativePrefillPipeline (downstream): sampled token %d, piece: '%s' (len %zu), is_finished: %d",
                      (int) sampled, piece.c_str(), piece.size(), (int) is_finished);
@@ -760,7 +764,7 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativeForwardPipeline(
                 common_sampler_accept(g_sampler, sampled, true);
 
                 const llama_vocab * vocab = llama_model_get_vocab(g_model);
-                bool is_finished = llama_vocab_is_eog(vocab, sampled) || (sampled == 2 || sampled == 0);
+                bool is_finished = llama_vocab_is_eog(vocab, sampled);
                 std::string piece = decode_token_to_piece(sampled);
                 LOGi("nativeForwardPipeline (single): sampled token %d, piece: '%s' (len %zu), is_finished: %d",
                      (int) sampled, piece.c_str(), piece.size(), (int) is_finished);
@@ -813,7 +817,7 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativeForwardPipeline(
                 common_sampler_accept(g_sampler, sampled, true);
 
                 const llama_vocab * vocab = llama_model_get_vocab(g_model);
-                bool is_finished = llama_vocab_is_eog(vocab, sampled) || (sampled == 2 || sampled == 0);
+                bool is_finished = llama_vocab_is_eog(vocab, sampled);
                 std::string piece = decode_token_to_piece(sampled);
                 LOGi("nativeForwardPipeline (downstream): sampled token %d, piece: '%s' (len %zu), is_finished: %d",
                      (int) sampled, piece.c_str(), piece.size(), (int) is_finished);
