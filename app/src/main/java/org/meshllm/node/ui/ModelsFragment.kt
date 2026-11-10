@@ -43,6 +43,7 @@ class ModelsFragment : Fragment() {
 
         setupRecyclerView()
         setupCategoryFilters()
+        setupSuitabilityAndQuantFilters()
         setupSearch()
         setupActionButtons()
         observeViewModel()
@@ -79,23 +80,56 @@ class ModelsFragment : Fragment() {
             binding.btnCatStarter to ModelCatalog.CATEGORY_ULTRA_SMALL
         )
 
-        val activeColor = Color.parseColor("#1A73E8")
-        val inactiveColor = Color.parseColor("#37474F")
+        val activeColor = Color.parseColor("#6366F1")
+        val inactiveColor = Color.parseColor("#171D2A")
 
         fun updateButtonColors(selectedCategory: String) {
             buttons.forEach { (btn, cat) ->
                 btn.setBackgroundColor(if (cat == selectedCategory) activeColor else inactiveColor)
+                btn.setTextColor(if (cat == selectedCategory) Color.WHITE else Color.parseColor("#94A3B8"))
             }
         }
 
         buttons.forEach { (btn, cat) ->
             btn.setOnClickListener {
-                viewModel.setCatalogFilter(cat, binding.etCatalogSearch.text.toString().trim())
+                viewModel.setCatalogFilter(category = cat, query = binding.etCatalogSearch.text.toString().trim())
                 updateButtonColors(cat)
             }
         }
 
         updateButtonColors(viewModel.catalogCategory.value)
+    }
+
+    private fun setupSuitabilityAndQuantFilters() {
+        binding.btnRefreshHf.setOnClickListener {
+            Toast.makeText(requireContext(), "Syncing models from Hugging Face Hub...", Toast.LENGTH_SHORT).show()
+            viewModel.fetchHuggingFaceCatalog(forceRefresh = true)
+        }
+
+        binding.btnToggleSuitable.setOnClickListener {
+            viewModel.toggleSuitableFilter()
+            val isSuitable = viewModel.suitableOnlyFilter.value
+            val msg = if (isSuitable) "Default filter: Showing suitable models only" else "Filter removed: Showing all Hugging Face models"
+            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+        }
+
+        val quantOptions = listOf(
+            null to "All Quants",
+            "Q4" to "Q4 (Optimal)",
+            "Q2" to "Q2 (Low RAM)",
+            "Q3" to "Q3 (Balanced)",
+            "Q5" to "Q5 (High Qual)",
+            "Q8" to "Q8 (Precision)"
+        )
+        var currentQuantIdx = 0
+
+        binding.btnQuantFilter.setOnClickListener {
+            currentQuantIdx = (currentQuantIdx + 1) % quantOptions.size
+            val (quantValue, label) = quantOptions[currentQuantIdx]
+            binding.btnQuantFilter.text = label
+            viewModel.setPreferredQuantFilter(quantValue)
+            Toast.makeText(requireContext(), "Quantization: $label", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupSearch() {
@@ -203,7 +237,7 @@ class ModelsFragment : Fragment() {
                 launch {
                     viewModel.catalogModels.collect { models ->
                         if (!viewModel.isHfSearching.value) {
-                            binding.tvCatalogCount.text = "${models.size} Models Available"
+                            binding.tvCatalogCount.text = "${models.size} Models"
                         }
                         modelAdapter.updateData(models, viewModel.activeModel.value.id)
                     }
@@ -211,10 +245,38 @@ class ModelsFragment : Fragment() {
 
                 launch {
                     viewModel.isHfSearching.collect { searching ->
+                        binding.pbHfLoading.visibility = if (searching) View.VISIBLE else View.GONE
                         if (searching) {
-                            binding.tvCatalogCount.text = "Searching Hugging Face... 🌐"
+                            binding.tvCatalogCount.text = "Syncing HF..."
                         } else {
-                            binding.tvCatalogCount.text = "${viewModel.catalogModels.value.size} Models Available"
+                            binding.tvCatalogCount.text = "${viewModel.catalogModels.value.size} Models"
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.suitableOnlyFilter.collect { suitableOnly ->
+                        if (suitableOnly) {
+                            binding.btnToggleSuitable.text = "✓ Suitable Only (≤15B, Quantized)"
+                            binding.btnToggleSuitable.setTextColor(Color.parseColor("#10B981"))
+                            binding.btnToggleSuitable.strokeColor = android.content.res.ColorStateList.valueOf(Color.parseColor("#10B981"))
+                        } else {
+                            binding.btnToggleSuitable.text = "All Models (Unfiltered)"
+                            binding.btnToggleSuitable.setTextColor(Color.parseColor("#94A3B8"))
+                            binding.btnToggleSuitable.strokeColor = android.content.res.ColorStateList.valueOf(Color.parseColor("#212838"))
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.preferredQuantFilter.collect { quant ->
+                        binding.btnQuantFilter.text = when (quant) {
+                            "Q4" -> "Q4 (Optimal)"
+                            "Q2" -> "Q2 (Low RAM)"
+                            "Q3" -> "Q3 (Balanced)"
+                            "Q5" -> "Q5 (High Qual)"
+                            "Q8" -> "Q8 (Precision)"
+                            else -> "All Quants"
                         }
                     }
                 }

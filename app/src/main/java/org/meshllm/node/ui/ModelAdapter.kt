@@ -72,6 +72,7 @@ class ModelAdapter(
             binding.tvStarterBadge.visibility = if (model.isStarterTestModel) View.VISIBLE else View.GONE
             binding.tvModelParams.text = "${model.paramCountStr} Params"
             binding.tvModelLayers.text = "${model.totalLayers} Layers"
+            binding.tvQuantBadge.text = model.quantization
             binding.tvModelRam.text = model.fileSizeDisplay
             binding.tvModelDim.text = "${model.hiddenDim} Dim"
             binding.tvModelDesc.text = model.description

@@ -1,6 +1,16 @@
 package org.meshllm.node.model
 
+import android.content.Context
+import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.File
+import java.util.concurrent.CopyOnWriteArrayList
+
 object ModelCatalog {
+
+    private const val TAG = "ModelCatalog"
+    private const val CACHE_FILE = "hf_models_cache.json"
 
     const val CATEGORY_ALL = "All"
     const val CATEGORY_ULTRA_SMALL = "Starter & Fast (<100M)"
@@ -16,12 +26,8 @@ object ModelCatalog {
         CATEGORY_LARGE_MESH
     )
 
-    private val MODELS: List<ModelSpec> = listOf(
-        // ==========================================
-        // 1. STARTER & FAST TESTING MODELS (<100M)
-        // Default models for rapid on-device verification and testing.
-        // ==========================================
-
+    // Baseline offline models for initial installation & local testing
+    private val FALLBACK_STARTER_MODELS: List<ModelSpec> = listOf(
         ModelSpec(
             id = "tinystories-15m",
             name = "TinyStories-15M",
@@ -34,7 +40,7 @@ object ModelCatalog {
             contextLength = 512,
             paramCountStr = "15M",
             memoryRequirementStr = "~60 MB",
-            description = "Full 6-layer LLaMA architecture trained on synthetic child stories. Generates coherent story continuations directly from user prompts across mobile mesh nodes.",
+            description = "Full 6-layer LLaMA architecture trained on synthetic child stories. Generates coherent story continuations across mobile mesh nodes.",
             samplePrompt = "Once upon a time, a small friendly robot wanted to explore the garden",
             huggingFaceRepo = "karpathy/tinyllamas",
             downloadUrl = "https://huggingface.co/karpathy/tinyllamas/resolve/main/stories15M.bin",
@@ -42,9 +48,10 @@ object ModelCatalog {
             fileSizeBytes = 60816028L,
             fileFormat = "BIN_LLAMA2",
             recommendedMinDevices = 1,
-            isStarterTestModel = true
+            isStarterTestModel = true,
+            quantization = "BIN",
+            isSuitableForMobile = true
         ),
-
         ModelSpec(
             id = "tinystories-33m",
             name = "TinyStories-33M",
@@ -65,9 +72,10 @@ object ModelCatalog {
             fileSizeBytes = 38000000L,
             fileFormat = "BIN_LLAMA2",
             recommendedMinDevices = 1,
-            isStarterTestModel = true
+            isStarterTestModel = true,
+            quantization = "BIN",
+            isSuitableForMobile = true
         ),
-
         ModelSpec(
             id = "tinystories-260k",
             name = "TinyStories-260K (Fast 1MB)",
@@ -80,7 +88,7 @@ object ModelCatalog {
             contextLength = 512,
             paramCountStr = "260K",
             memoryRequirementStr = "~1.0 MB",
-            description = "Ultra-fast 1 MB test model from Hugging Face. Downloads to device in 1-2 seconds. Instant verification of real weight download and storage caching without waiting.",
+            description = "Ultra-fast 1 MB test model from Hugging Face for instant pipeline verification without downloading gigabytes.",
             samplePrompt = "Once upon a time, a small friendly robot wanted to explore the garden",
             huggingFaceRepo = "karpathy/tinyllamas",
             downloadUrl = "https://huggingface.co/karpathy/tinyllamas/resolve/main/stories260K/stories260K.bin",
@@ -88,134 +96,10 @@ object ModelCatalog {
             fileSizeBytes = 1056540L,
             fileFormat = "BIN_LLAMA2",
             recommendedMinDevices = 1,
-            isStarterTestModel = true
+            isStarterTestModel = true,
+            quantization = "BIN",
+            isSuitableForMobile = true
         ),
-
-        // ==========================================
-        // 2. MASSIVE MESH MODELS (7B - 15B)
-        // Designed specifically to showcase mesh pipeline partitioning!
-        // Single phones crash with OOM; 4 to 8 phones split layers across RAM.
-        // ==========================================
-
-        ModelSpec(
-            id = "qwen2.5-14b",
-            name = "Qwen2.5-14B-Instruct",
-            provider = "Alibaba Cloud",
-            category = CATEGORY_LARGE_MESH,
-            totalLayers = 48,
-            hiddenDim = 5120,
-            intermediateDim = 27648,
-            numHeads = 40,
-            contextLength = 4096,
-            paramCountStr = "14.7B",
-            memoryRequirementStr = "~5.8 GB (Q2_K) / ~9.2 GB (Q4)",
-            description = "High-intelligence 48-layer multilingual foundation model. Completely exceeds single-device mobile RAM (OOM Crash). Demonstrates distributed mesh pipeline partitioning across 6 to 8 phones.",
-            samplePrompt = "Compare the architectural benefits of tensor parallelism versus sequential pipeline parallelism on mobile clusters:",
-            huggingFaceRepo = "Qwen/Qwen2.5-14B-Instruct-GGUF",
-            downloadUrl = "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q2_k.gguf",
-            fileName = "qwen2.5-14b-instruct-q2_k.gguf",
-            fileSizeBytes = 6250000000L,
-            fileFormat = "GGUF",
-            recommendedMinDevices = 6,
-            singleDeviceOomWarning = true
-        ),
-
-        ModelSpec(
-            id = "deepseek-r1-14b",
-            name = "DeepSeek-R1-Distill-Qwen-14B",
-            provider = "DeepSeek AI",
-            category = CATEGORY_LARGE_MESH,
-            totalLayers = 48,
-            hiddenDim = 5120,
-            intermediateDim = 27648,
-            numHeads = 40,
-            contextLength = 8192,
-            paramCountStr = "14.7B",
-            memoryRequirementStr = "~5.8 GB (Q2_K) / ~8.9 GB (Q4)",
-            description = "State-of-the-art distilled reasoning model. Deep 48 transformer layers with specialized chain-of-thought logic. Requires 6+ mobile nodes to distribute memory and computation.",
-            samplePrompt = "A car travels at 60 mph for 2 hours, then 40 mph for 1 hour. Reason step-by-step through the average speed:",
-            huggingFaceRepo = "unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF",
-            downloadUrl = "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-14B-Q2_K.gguf",
-            fileName = "DeepSeek-R1-Distill-Qwen-14B-Q2_K.gguf",
-            fileSizeBytes = 6250000000L,
-            fileFormat = "GGUF",
-            recommendedMinDevices = 6,
-            singleDeviceOomWarning = true
-        ),
-
-        ModelSpec(
-            id = "llama-3.1-8b",
-            name = "Llama-3.1-8B-Instruct",
-            provider = "Meta AI",
-            category = CATEGORY_LARGE_MESH,
-            totalLayers = 32,
-            hiddenDim = 4096,
-            intermediateDim = 14336,
-            numHeads = 32,
-            contextLength = 8192,
-            paramCountStr = "8.03B",
-            memoryRequirementStr = "~3.2 GB (Q2_K) / ~4.9 GB (Q4)",
-            description = "Meta's flagship 8B open model. 32 wide transformer layers with Grouped-Query Attention (GQA). Requires 4 to 6 mobile devices to split memory footprint and prevent device freezing.",
-            samplePrompt = "Explain how distributed fault tolerance ensures that if an orchestrator node disconnects, a successor node seamlessly resumes generation:",
-            huggingFaceRepo = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
-            downloadUrl = "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q2_K.gguf",
-            fileName = "Meta-Llama-3.1-8B-Instruct-Q2_K.gguf",
-            fileSizeBytes = 3415000000L,
-            fileFormat = "GGUF",
-            recommendedMinDevices = 4,
-            singleDeviceOomWarning = true
-        ),
-
-        ModelSpec(
-            id = "qwen2.5-7b",
-            name = "Qwen2.5-7B-Instruct",
-            provider = "Alibaba Cloud",
-            category = CATEGORY_LARGE_MESH,
-            totalLayers = 28,
-            hiddenDim = 3584,
-            intermediateDim = 18944,
-            numHeads = 28,
-            contextLength = 8192,
-            paramCountStr = "7.61B",
-            memoryRequirementStr = "~2.9 GB (Q2_K) / ~4.5 GB (Q4)",
-            description = "High-efficiency 28-layer LLM with enhanced coding and mathematical capabilities. Partitioned across 4 to 6 phones (approx. 5-7 layers per phone).",
-            samplePrompt = "Provide an outline of how mobile sensors (battery temperature, charging state) should dynamically modulate compute weight assignments:",
-            huggingFaceRepo = "Qwen/Qwen2.5-7B-Instruct-GGUF",
-            downloadUrl = "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q2_k.gguf",
-            fileName = "qwen2.5-7b-instruct-q2_k.gguf",
-            fileSizeBytes = 3080000000L,
-            fileFormat = "GGUF",
-            recommendedMinDevices = 4,
-            singleDeviceOomWarning = true
-        ),
-
-        ModelSpec(
-            id = "mistral-7b",
-            name = "Mistral-7B-Instruct-v0.3",
-            provider = "Mistral AI",
-            category = CATEGORY_LARGE_MESH,
-            totalLayers = 32,
-            hiddenDim = 4096,
-            intermediateDim = 14336,
-            numHeads = 32,
-            contextLength = 8192,
-            paramCountStr = "7.25B",
-            memoryRequirementStr = "~3.0 GB (Q2_K) / ~4.4 GB (Q4)",
-            description = "High-throughput 32-layer instruction model with sliding window attention. Split across 4 to 6 phones for fast token throughput.",
-            samplePrompt = "Describe the role of UDP broadcast beacons in serverless peer-to-peer mobile mesh discovery:",
-            huggingFaceRepo = "bartowski/Mistral-7B-Instruct-v0.3-GGUF",
-            downloadUrl = "https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q2_K.gguf",
-            fileName = "Mistral-7B-Instruct-v0.3-Q2_K.gguf",
-            fileSizeBytes = 3165000000L,
-            fileFormat = "GGUF",
-            recommendedMinDevices = 4,
-            singleDeviceOomWarning = true
-        ),
-
-        // ==========================================
-        // 3. COMPACT EDGE MODELS (<1B)
-        // ==========================================
-
         ModelSpec(
             id = "smollm2-135m",
             name = "SmolLM2-135M",
@@ -236,9 +120,10 @@ object ModelCatalog {
             fileSizeBytes = 96000000L,
             fileFormat = "GGUF",
             recommendedMinDevices = 2,
-            isStarterTestModel = true
+            isStarterTestModel = true,
+            quantization = "Q4_K_M",
+            isSuitableForMobile = true
         ),
-
         ModelSpec(
             id = "qwen2.5-0.5b",
             name = "Qwen2.5-0.5B-Instruct",
@@ -258,13 +143,10 @@ object ModelCatalog {
             fileName = "qwen2.5-0.5b-instruct-q2_k.gguf",
             fileSizeBytes = 248000000L,
             fileFormat = "GGUF",
-            recommendedMinDevices = 2
+            recommendedMinDevices = 2,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
         ),
-
-        // ==========================================
-        // 4. STANDARD EDGE MODELS (1B - 3B)
-        // ==========================================
-
         ModelSpec(
             id = "llama-3.2-1b",
             name = "Llama-3.2-1B-Instruct",
@@ -284,9 +166,10 @@ object ModelCatalog {
             fileName = "Llama-3.2-1B-Instruct-Q2_K.gguf",
             fileSizeBytes = 550000000L,
             fileFormat = "GGUF",
-            recommendedMinDevices = 2
+            recommendedMinDevices = 2,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
         ),
-
         ModelSpec(
             id = "tinyllama-1.1b",
             name = "TinyLlama-1.1B-Chat",
@@ -306,45 +189,243 @@ object ModelCatalog {
             fileName = "tinyllama-1.1b-chat-v1.0.Q2_K.gguf",
             fileSizeBytes = 480000000L,
             fileFormat = "GGUF",
-            recommendedMinDevices = 2
+            recommendedMinDevices = 2,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
+        ),
+        ModelSpec(
+            id = "mistral-7b",
+            name = "Mistral-7B-Instruct-v0.3",
+            provider = "Mistral AI",
+            category = CATEGORY_LARGE_MESH,
+            totalLayers = 32,
+            hiddenDim = 4096,
+            intermediateDim = 14336,
+            numHeads = 32,
+            contextLength = 8192,
+            paramCountStr = "7.25B",
+            memoryRequirementStr = "~3.0 GB (Q2_K)",
+            description = "High-throughput 32-layer instruction model with sliding window attention. Split across 4 to 6 phones for fast token throughput.",
+            samplePrompt = "Describe the role of UDP broadcast beacons in serverless peer-to-peer mobile mesh discovery:",
+            huggingFaceRepo = "bartowski/Mistral-7B-Instruct-v0.3-GGUF",
+            downloadUrl = "https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q2_K.gguf",
+            fileName = "Mistral-7B-Instruct-v0.3-Q2_K.gguf",
+            fileSizeBytes = 3165000000L,
+            fileFormat = "GGUF",
+            recommendedMinDevices = 4,
+            singleDeviceOomWarning = true,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
+        ),
+        ModelSpec(
+            id = "qwen2.5-7b",
+            name = "Qwen2.5-7B-Instruct",
+            provider = "Alibaba Cloud",
+            category = CATEGORY_LARGE_MESH,
+            totalLayers = 28,
+            hiddenDim = 3584,
+            intermediateDim = 18944,
+            numHeads = 28,
+            contextLength = 8192,
+            paramCountStr = "7.61B",
+            memoryRequirementStr = "~2.9 GB (Q2_K)",
+            description = "High-efficiency 28-layer LLM with enhanced coding and mathematical capabilities. Partitioned across 4 to 6 phones.",
+            samplePrompt = "Provide an outline of how mobile sensors dynamically modulate compute weight assignments:",
+            huggingFaceRepo = "Qwen/Qwen2.5-7B-Instruct-GGUF",
+            downloadUrl = "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q2_k.gguf",
+            fileName = "qwen2.5-7b-instruct-q2_k.gguf",
+            fileSizeBytes = 3080000000L,
+            fileFormat = "GGUF",
+            recommendedMinDevices = 4,
+            singleDeviceOomWarning = true,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
+        ),
+        ModelSpec(
+            id = "llama-3.1-8b",
+            name = "Llama-3.1-8B-Instruct",
+            provider = "Meta AI",
+            category = CATEGORY_LARGE_MESH,
+            totalLayers = 32,
+            hiddenDim = 4096,
+            intermediateDim = 14336,
+            numHeads = 32,
+            contextLength = 8192,
+            paramCountStr = "8.03B",
+            memoryRequirementStr = "~3.2 GB (Q2_K)",
+            description = "Meta's flagship 8B open model. 32 wide transformer layers with Grouped-Query Attention (GQA). Split across 4 to 6 devices.",
+            samplePrompt = "Explain how distributed fault tolerance ensures that if an orchestrator node disconnects, a successor node seamlessly resumes generation:",
+            huggingFaceRepo = "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+            downloadUrl = "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q2_K.gguf",
+            fileName = "Meta-Llama-3.1-8B-Instruct-Q2_K.gguf",
+            fileSizeBytes = 3415000000L,
+            fileFormat = "GGUF",
+            recommendedMinDevices = 4,
+            singleDeviceOomWarning = true,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
+        ),
+        ModelSpec(
+            id = "deepseek-r1-14b",
+            name = "DeepSeek-R1-Distill-Qwen-14B",
+            provider = "DeepSeek AI",
+            category = CATEGORY_LARGE_MESH,
+            totalLayers = 48,
+            hiddenDim = 5120,
+            intermediateDim = 27648,
+            numHeads = 40,
+            contextLength = 8192,
+            paramCountStr = "14.7B",
+            memoryRequirementStr = "~5.8 GB (Q2_K)",
+            description = "State-of-the-art distilled reasoning model with 48 layers and chain-of-thought logic. Requires 6+ mobile nodes.",
+            samplePrompt = "A car travels at 60 mph for 2 hours, then 40 mph for 1 hour. Reason step-by-step through the average speed:",
+            huggingFaceRepo = "unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF",
+            downloadUrl = "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-14B-Q2_K.gguf",
+            fileName = "DeepSeek-R1-Distill-Qwen-14B-Q2_K.gguf",
+            fileSizeBytes = 6250000000L,
+            fileFormat = "GGUF",
+            recommendedMinDevices = 6,
+            singleDeviceOomWarning = true,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
+        ),
+        ModelSpec(
+            id = "qwen2.5-14b",
+            name = "Qwen2.5-14B-Instruct",
+            provider = "Alibaba Cloud",
+            category = CATEGORY_LARGE_MESH,
+            totalLayers = 48,
+            hiddenDim = 5120,
+            intermediateDim = 27648,
+            numHeads = 40,
+            contextLength = 4096,
+            paramCountStr = "14.7B",
+            memoryRequirementStr = "~5.8 GB (Q2_K)",
+            description = "High-intelligence 48-layer multilingual foundation model. Exceeds single phone RAM and partitions across 6 to 8 phones.",
+            samplePrompt = "Compare the architectural benefits of tensor parallelism versus sequential pipeline parallelism on mobile clusters:",
+            huggingFaceRepo = "Qwen/Qwen2.5-14B-Instruct-GGUF",
+            downloadUrl = "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q2_k.gguf",
+            fileName = "qwen2.5-14b-instruct-q2_k.gguf",
+            fileSizeBytes = 6250000000L,
+            fileFormat = "GGUF",
+            recommendedMinDevices = 6,
+            singleDeviceOomWarning = true,
+            quantization = "Q2_K",
+            isSuitableForMobile = true
         )
     )
 
-    private val dynamicModels = java.util.concurrent.CopyOnWriteArrayList<ModelSpec>()
+    // Dynamic models fetched directly from Hugging Face Hub
+    private val dynamicModels = CopyOnWriteArrayList<ModelSpec>()
 
-    fun addDynamicModels(models: List<ModelSpec>) {
+    fun loadCache(context: Context) {
+        try {
+            val file = File(context.filesDir, CACHE_FILE)
+            if (file.exists() && file.length() > 10L) {
+                val json = file.readText()
+                val listType = object : TypeToken<List<ModelSpec>>() {}.type
+                val cached: List<ModelSpec> = Gson().fromJson(json, listType)
+                if (cached.isNotEmpty()) {
+                    dynamicModels.clear()
+                    dynamicModels.addAll(cached)
+                    Log.i(TAG, "Loaded ${cached.size} Hugging Face models from local disk cache")
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to load cached models: ${e.message}")
+        }
+    }
+
+    fun saveCache(context: Context) {
+        try {
+            val file = File(context.filesDir, CACHE_FILE)
+            val json = Gson().toJson(dynamicModels.toList())
+            file.writeText(json)
+            Log.i(TAG, "Saved ${dynamicModels.size} Hugging Face models to local disk cache")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to save models cache: ${e.message}")
+        }
+    }
+
+    fun addDynamicModels(models: List<ModelSpec>, context: Context? = null) {
+        var changed = false
         for (m in models) {
             val idx = dynamicModels.indexOfFirst { it.id.equals(m.id, ignoreCase = true) }
             if (idx >= 0) {
                 dynamicModels[idx] = m
             } else {
                 dynamicModels.add(m)
+                changed = true
             }
+        }
+        if (changed && context != null) {
+            saveCache(context)
         }
     }
 
-    fun getAllModels(): List<ModelSpec> = MODELS + dynamicModels
+    fun setDynamicModels(models: List<ModelSpec>, context: Context? = null) {
+        dynamicModels.clear()
+        dynamicModels.addAll(models)
+        if (context != null) {
+            saveCache(context)
+        }
+    }
 
-    fun getDefaultModel(): ModelSpec = MODELS.first { it.id == "tinystories-15m" }
+    fun getAllModels(): List<ModelSpec> {
+        val all = mutableListOf<ModelSpec>()
+        all.addAll(FALLBACK_STARTER_MODELS)
+        for (m in dynamicModels) {
+            if (all.none { it.id.equals(m.id, ignoreCase = true) }) {
+                all.add(m)
+            }
+        }
+        return all
+    }
+
+    fun getDefaultModel(): ModelSpec =
+        FALLBACK_STARTER_MODELS.firstOrNull { it.id == "tinystories-15m" } ?: getAllModels().first()
 
     fun getModelById(id: String): ModelSpec? =
-        dynamicModels.find { it.id.equals(id, ignoreCase = true) } ?: MODELS.find { it.id.equals(id, ignoreCase = true) }
+        dynamicModels.find { it.id.equals(id, ignoreCase = true) }
+            ?: FALLBACK_STARTER_MODELS.find { it.id.equals(id, ignoreCase = true) }
 
-    fun filter(category: String?, query: String?): List<ModelSpec> {
+    /**
+     * Filter models by category, search query, suitability for mobile, and quantization.
+     * [suitableOnly] defaults to true to show tested, mobile-safe models, but can be disabled
+     * or altered to view any model on Hugging Face.
+     */
+    fun filter(
+        category: String?,
+        query: String?,
+        suitableOnly: Boolean = true,
+        preferredQuant: String? = null
+    ): List<ModelSpec> {
         val pool = getAllModels()
         return pool.filter { model ->
+            // Suitability check
+            if (suitableOnly && !model.isSuitableForMobile) {
+                return@filter false
+            }
+
+            // Category check
             val matchCategory = category.isNullOrEmpty() ||
                     category == CATEGORY_ALL ||
                     model.category.equals(category, ignoreCase = true)
 
+            // Quantization check
+            val matchQuant = preferredQuant.isNullOrEmpty() ||
+                    model.quantization.contains(preferredQuant, ignoreCase = true)
+
+            // Search query check
             val matchQuery = query.isNullOrBlank() ||
                     model.name.contains(query, ignoreCase = true) ||
                     model.provider.contains(query, ignoreCase = true) ||
                     model.description.contains(query, ignoreCase = true) ||
                     model.paramCountStr.contains(query, ignoreCase = true) ||
-                    (model.huggingFaceRepo?.contains(query, ignoreCase = true) == true)
+                    (model.huggingFaceRepo?.contains(query, ignoreCase = true) == true) ||
+                    model.quantization.contains(query, ignoreCase = true)
 
-            matchCategory && matchQuery
+            matchCategory && matchQuant && matchQuery
         }
     }
 }

@@ -2,7 +2,7 @@ package org.meshllm.node.model
 
 /**
  * Metadata and architecture specification for an open-source LLM,
- * including real download endpoints and file metadata for storage caching.
+ * including dynamic Hugging Face download endpoints and suitability classification.
  */
 data class ModelSpec(
     val id: String,
@@ -23,10 +23,14 @@ data class ModelSpec(
     val downloadUrl: String = "",
     val fileName: String = "",
     val fileSizeBytes: Long = 0L,
-    val fileFormat: String = "BIN_LLAMA2", // "BIN_LLAMA2", "GGUF"
+    val fileFormat: String = "GGUF", // "BIN_LLAMA2", "GGUF"
     val recommendedMinDevices: Int = 1,
     val isStarterTestModel: Boolean = false,
-    val singleDeviceOomWarning: Boolean = false
+    val singleDeviceOomWarning: Boolean = false,
+    val quantization: String = "GGUF",
+    val isSuitableForMobile: Boolean = true,
+    val downloadsCount: Long = 0L,
+    val likesCount: Long = 0L
 ) {
     val architectureSummary: String
         get() = "$totalLayers Layers • Hidden: $hiddenDim • Heads: $numHeads • Intermediate: $intermediateDim"

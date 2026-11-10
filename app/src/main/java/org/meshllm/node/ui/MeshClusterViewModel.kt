@@ -139,6 +139,12 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
     private val _catalogQuery = MutableStateFlow("")
     val catalogQuery: StateFlow<String> = _catalogQuery.asStateFlow()
 
+    private val _suitableOnlyFilter = MutableStateFlow(true)
+    val suitableOnlyFilter: StateFlow<Boolean> = _suitableOnlyFilter.asStateFlow()
+
+    private val _preferredQuantFilter = MutableStateFlow<String?>(null)
+    val preferredQuantFilter: StateFlow<String?> = _preferredQuantFilter.asStateFlow()
+
     private val _catalogModels = MutableStateFlow(ModelCatalog.getAllModels())
     val catalogModels: StateFlow<List<ModelSpec>> = _catalogModels.asStateFlow()
 
@@ -161,11 +167,13 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
     private var hfSearchJob: Job? = null
 
     init {
+        ModelCatalog.loadCache(application)
         checkForCachedBenchmarkProfile()
         startTelemetryLoop()
         refreshCatalog()
         inspectActiveModelWeights()
         observeDownloadStatesForCluster()
+        fetchHuggingFaceCatalog()
     }
 
     private fun observeDownloadStatesForCluster() {
@@ -221,6 +229,24 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun fetchHuggingFaceCatalog(forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            _isHfSearching.value = true
+            try {
+                val models = huggingFaceClient.fetchPopularModels(limit = 40)
+                if (models.isNotEmpty()) {
+                    ModelCatalog.addDynamicModels(models, getApplication())
+                    refreshCatalog()
+                    Log.i(TAG, "Dynamic Hugging Face models synced: ${models.size} models loaded")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed fetching Hugging Face catalog: ${e.message}", e)
+            } finally {
+                _isHfSearching.value = false
+            }
+        }
+    }
+
     fun searchHuggingFace(query: String) {
         val cleanQuery = query.trim()
         if (cleanQuery.length < 2) return
@@ -229,9 +255,9 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         hfSearchJob = viewModelScope.launch {
             _isHfSearching.value = true
             try {
-                val results = huggingFaceClient.searchModels(cleanQuery, limit = 15)
+                val results = huggingFaceClient.searchModels(cleanQuery, limit = 25)
                 if (results.isNotEmpty()) {
-                    ModelCatalog.addDynamicModels(results)
+                    ModelCatalog.addDynamicModels(results, getApplication())
                     refreshCatalog()
                 }
             } catch (e: Exception) {
@@ -242,19 +268,46 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun setCatalogFilter(category: String, query: String) {
+    fun toggleSuitableFilter() {
+        _suitableOnlyFilter.value = !_suitableOnlyFilter.value
+        refreshCatalog()
+    }
+
+    fun setSuitableFilter(suitableOnly: Boolean) {
+        _suitableOnlyFilter.value = suitableOnly
+        refreshCatalog()
+    }
+
+    fun setPreferredQuantFilter(quant: String?) {
+        _preferredQuantFilter.value = quant
+        refreshCatalog()
+    }
+
+    fun setCatalogFilter(
+        category: String = _catalogCategory.value,
+        query: String = _catalogQuery.value,
+        suitableOnly: Boolean = _suitableOnlyFilter.value,
+        preferredQuant: String? = _preferredQuantFilter.value
+    ) {
         _catalogCategory.value = category
         _catalogQuery.value = query
+        _suitableOnlyFilter.value = suitableOnly
+        _preferredQuantFilter.value = preferredQuant
         refreshCatalog()
 
         // If user is searching, also query Hugging Face directly in real-time
-        if (query.trim().length >= 3) {
+        if (query.trim().length >= 2) {
             searchHuggingFace(query)
         }
     }
 
     fun refreshCatalog() {
-        _catalogModels.value = ModelCatalog.filter(_catalogCategory.value, _catalogQuery.value)
+        _catalogModels.value = ModelCatalog.filter(
+            category = _catalogCategory.value,
+            query = _catalogQuery.value,
+            suitableOnly = _suitableOnlyFilter.value,
+            preferredQuant = _preferredQuantFilter.value
+        )
     }
 
     fun selectModel(model: ModelSpec) {

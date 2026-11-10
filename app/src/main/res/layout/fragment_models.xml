@@ -419,16 +419,37 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Model Catalog"
+                android:text="Hugging Face Model Hub"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/pbHfLoading"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="6dp"
+                android:indeterminateTint="@color/accent"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefreshHf"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="6dp"
+                android:text="Sync HF"
+                android:textColor="@color/accent"
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/tvCatalogCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12 Models"
+                android:text="Models"
                 android:textColor="@color/text_muted"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -438,14 +459,53 @@
             android:id="@+id/etCatalogSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/bg_terminal_rounded"
-            android:hint="Search models, architectures, or providers..."
+            android:hint="Search Hugging Face models (e.g. qwen, llama, smollm)..."
             android:inputType="text"
             android:padding="12dp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_muted"
             android:textSize="13sp" />
+
+        <!-- Suitability & Quantization Filter Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleSuitable"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/accent"
+                android:text="✓ Suitable Only (≤15B, Quantized)"
+                android:textColor="@color/accent"
+                android:textAllCaps="false"
+                android:textSize="11sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuantFilter"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/border_subtle"
+                android:text="All Quants"
+                android:textColor="@color/text_secondary"
+                android:textAllCaps="false"
+                android:textSize="11sp" />
+        </LinearLayout>
 
         <!-- Category Filter Horizontal Scroll -->
         <HorizontalScrollView

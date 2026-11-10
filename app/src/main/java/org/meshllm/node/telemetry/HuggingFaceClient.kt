@@ -15,60 +15,86 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 /**
- * Dynamic Hugging Face Hub client for real-time model discovery and multi-quantization selection.
- * Directly queries the official Hugging Face API so no models or download URLs are hardcoded.
+ * Dynamic Hugging Face Hub client for real-time model discovery and direct GGUF fetching.
+ * Directly queries the official Hugging Face Hub API so models, architectures,
+ * and download URLs are dynamically resolved rather than hardcoded.
  */
 class HuggingFaceClient {
 
     companion object {
         private const val TAG = "HuggingFaceClient"
         private const val HF_API_BASE = "https://huggingface.co/api"
+
+        // Preferred standard quantizations for mobile inference
+        val SUITABLE_QUANTS = setOf(
+            "Q2_K", "Q3_K_M", "Q3_K_S", "Q4_K_M", "Q4_K_S", "Q4_0", "Q4_1",
+            "Q5_K_M", "Q5_K_S", "Q5_0", "Q6_K", "Q8_0", "IQ2_M", "IQ3_M", "IQ4_XS"
+        )
     }
 
     private val gson = Gson()
     private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
+        .connectTimeout(12, TimeUnit.SECONDS)
+        .readTimeout(18, TimeUnit.SECONDS)
         .followRedirects(true)
         .build()
 
     /**
-     * Search Hugging Face dynamically for GGUF models matching [query].
-     * Returns a list of [ModelSpec]s with all available quantizations (Q2_K, Q3_K_M, Q4_K_M, etc.).
+     * Dynamically fetch popular, top-downloaded and trending GGUF text generation models from Hugging Face.
      */
-    suspend fun searchModels(query: String, limit: Int = 15): List<ModelSpec> = withContext(Dispatchers.IO) {
+    suspend fun fetchPopularModels(limit: Int = 30): List<ModelSpec> = withContext(Dispatchers.IO) {
+        val collected = mutableListOf<ModelSpec>()
+        val seenIds = mutableSetOf<String>()
+
+        fun addSpecs(specs: List<ModelSpec>) {
+            for (s in specs) {
+                if (seenIds.add(s.id)) {
+                    collected.add(s)
+                }
+            }
+        }
+
+        try {
+            // 1. Query top downloaded text-generation GGUFs across Hugging Face
+            val topUrl = "$HF_API_BASE/models?pipeline_tag=text-generation&filter=gguf&sort=downloads&direction=-1&limit=$limit&full=true"
+            val topSpecs = executeModelListQuery(topUrl)
+            addSpecs(topSpecs)
+
+            // 2. Query curated top mobile models (Qwen, Llama 3.2, SmolLM2) to ensure small-to-standard variety
+            val queries = listOf(
+                "qwen2.5%20gguf",
+                "llama-3.2%20gguf",
+                "smollm2%20gguf"
+            )
+            for (q in queries) {
+                val qUrl = "$HF_API_BASE/models?search=$q&pipeline_tag=text-generation&filter=gguf&sort=downloads&direction=-1&limit=6&full=true"
+                val qSpecs = executeModelListQuery(qUrl)
+                addSpecs(qSpecs)
+            }
+
+            Log.i(TAG, "Successfully fetched ${collected.size} dynamic models from Hugging Face Hub")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching models from Hugging Face: ${e.message}", e)
+        }
+
+        return@withContext collected
+    }
+
+    /**
+     * Search Hugging Face dynamically for GGUF models matching [query].
+     * Returns a list of [ModelSpec]s with all available quantizations.
+     */
+    suspend fun searchModels(query: String, limit: Int = 25): List<ModelSpec> = withContext(Dispatchers.IO) {
         val cleanQuery = query.trim()
         if (cleanQuery.isEmpty()) return@withContext emptyList()
 
         try {
             val encodedQuery = URLEncoder.encode(cleanQuery, "UTF-8")
-            val url = "$HF_API_BASE/models?search=$encodedQuery&filter=gguf&sort=downloads&direction=-1&limit=$limit"
+            val url = "$HF_API_BASE/models?search=$encodedQuery&filter=gguf&sort=downloads&direction=-1&limit=$limit&full=true"
 
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("User-Agent", "MeshLLM-Android-Node/1.0")
-                .build()
-
-            httpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.w(TAG, "HF search failed: HTTP ${response.code}")
-                    return@withContext emptyList()
-                }
-
-                val body = response.body?.string() ?: return@withContext emptyList()
-                val jsonArray = gson.fromJson(body, JsonArray::class.java)
-
-                val results = mutableListOf<ModelSpec>()
-                for (element in jsonArray) {
-                    if (!element.isJsonObject) continue
-                    val obj = element.asJsonObject
-                    val specs = parseModelObject(obj)
-                    results.addAll(specs)
-                }
-
-                Log.i(TAG, "Found ${results.size} model quantizations on Hugging Face for '$cleanQuery'")
-                return@withContext results
-            }
+            val results = executeModelListQuery(url)
+            Log.i(TAG, "Found ${results.size} model quantizations on Hugging Face for '$cleanQuery'")
+            return@withContext results
         } catch (e: Exception) {
             Log.e(TAG, "Error searching Hugging Face: ${e.message}", e)
             return@withContext emptyList()
@@ -87,9 +113,7 @@ class HuggingFaceClient {
                 .build()
 
             httpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return@withContext emptyList()
-                }
+                if (!response.isSuccessful) return@withContext emptyList()
 
                 val body = response.body?.string() ?: return@withContext emptyList()
                 val treeArray = gson.fromJson(body, JsonArray::class.java)
@@ -102,7 +126,7 @@ class HuggingFaceClient {
                     if (!path.endsWith(".gguf", ignoreCase = true)) continue
 
                     val size = fileObj.get("size")?.asLong ?: 0L
-                    val spec = createModelSpec(repoId, path, size)
+                    val spec = createModelSpec(repoId, path, size, downloads = 0L, likes = 0L)
                     results.add(spec)
                 }
 
@@ -114,24 +138,67 @@ class HuggingFaceClient {
         }
     }
 
+    private fun executeModelListQuery(url: String): List<ModelSpec> {
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("User-Agent", "MeshLLM-Android-Node/1.0")
+            .build()
+
+        httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                Log.w(TAG, "HF query failed [${response.code}]: $url")
+                return emptyList()
+            }
+
+            val body = response.body?.string() ?: return emptyList()
+            val jsonArray = gson.fromJson(body, JsonArray::class.java)
+
+            val results = mutableListOf<ModelSpec>()
+            for (element in jsonArray) {
+                if (!element.isJsonObject) continue
+                val obj = element.asJsonObject
+                val specs = parseModelObject(obj)
+                results.addAll(specs)
+            }
+            return results
+        }
+    }
+
     private fun parseModelObject(obj: JsonObject): List<ModelSpec> {
         val repoId = obj.get("id")?.asString ?: return emptyList()
-        val siblings = obj.getAsJsonArray("siblings") ?: return emptyList()
+        val downloads = obj.get("downloads")?.asLong ?: 0L
+        val likes = obj.get("likes")?.asLong ?: 0L
+        val siblings = obj.getAsJsonArray("siblings")
 
         val results = mutableListOf<ModelSpec>()
-        for (sib in siblings) {
-            if (!sib.isJsonObject) continue
-            val rfilename = sib.asJsonObject.get("rfilename")?.asString ?: continue
-            if (rfilename.endsWith(".gguf", ignoreCase = true)) {
-                val spec = createModelSpec(repoId, rfilename, 0L)
-                results.add(spec)
+
+        if (siblings != null && siblings.size() > 0) {
+            for (sib in siblings) {
+                if (!sib.isJsonObject) continue
+                val rfilename = sib.asJsonObject.get("rfilename")?.asString ?: continue
+                if (rfilename.endsWith(".gguf", ignoreCase = true)) {
+                    val spec = createModelSpec(repoId, rfilename, 0L, downloads, likes)
+                    results.add(spec)
+                }
             }
+        } else {
+            // Sibling list not expanded; provide default Q4_K_M GGUF endpoint
+            val modelName = repoId.substringAfter('/').removeSuffix("-GGUF").removeSuffix("-gguf")
+            val defaultFileName = "${modelName.lowercase()}-q4_k_m.gguf"
+            val spec = createModelSpec(repoId, defaultFileName, 0L, downloads, likes)
+            results.add(spec)
         }
 
         return results
     }
 
-    private fun createModelSpec(repoId: String, fileName: String, sizeBytes: Long): ModelSpec {
+    private fun createModelSpec(
+        repoId: String,
+        fileName: String,
+        sizeBytes: Long,
+        downloads: Long,
+        likes: Long
+    ): ModelSpec {
         val author = repoId.substringBefore('/')
         val modelBaseName = repoId.substringAfter('/').removeSuffix("-GGUF").removeSuffix("-gguf")
         val quant = extractQuantization(fileName)
@@ -139,15 +206,15 @@ class HuggingFaceClient {
         val id = "${repoId.replace('/', '_')}__$fileName"
         val displayName = "$modelBaseName [$quant]"
 
-        // Infer parameters from name (e.g. 0.5B, 1B, 3B, 7B, 8B, 14B, 70B)
+        // Infer parameter count (e.g. 135M, 0.5B, 1B, 3B, 7B, 8B, 14B, 70B)
         val paramCount = inferParamCount(repoId + " " + fileName)
         val layers = inferLayers(paramCount)
         val hiddenDim = inferHiddenDim(paramCount)
         val category = inferCategory(paramCount)
 
+        // Dynamic Hugging Face resolve URL
         val downloadUrl = "https://huggingface.co/$repoId/resolve/main/$fileName"
 
-        // Estimated size if not provided by tree endpoint
         val finalSizeBytes = if (sizeBytes > 0L) sizeBytes else estimateSizeBytes(paramCount, quant)
         val sizeMb = Math.round((finalSizeBytes.toDouble() / (1024.0 * 1024.0)) * 10.0) / 10.0
 
@@ -165,6 +232,17 @@ class HuggingFaceClient {
             else -> 1
         }
 
+        // Assess suitability for distributed mobile inference
+        val isMmproj = fileName.lowercase().contains("mmproj")
+        val isSplit = fileName.contains("-of-") || fileName.contains(".part")
+        val isGguf = fileName.endsWith(".gguf", ignoreCase = true)
+        val isRawFloat = quant.contains("FP16") || quant.contains("F16") || quant.contains("BF16") || quant.contains("FP32")
+        val isReasonableParam = paramCount in 0.01..16.0
+        val isSuitableQuant = SUITABLE_QUANTS.any { quant.contains(it, ignoreCase = true) } ||
+                quant.startsWith("Q", ignoreCase = true) || quant.startsWith("IQ", ignoreCase = true)
+
+        val isSuitable = isGguf && !isMmproj && !isSplit && !isRawFloat && isReasonableParam && isSuitableQuant
+
         return ModelSpec(
             id = id,
             name = displayName,
@@ -177,7 +255,7 @@ class HuggingFaceClient {
             contextLength = 4096,
             paramCountStr = if (paramCount >= 1.0) "${paramCount}B" else "${(paramCount * 1000).toInt()}M",
             memoryRequirementStr = memReqStr,
-            description = "Dynamic Hugging Face model ($repoId) in $quant quantization. Optimized for pipeline parallel execution across $minDevices+ mobile devices.",
+            description = "Dynamic Hugging Face model ($repoId) in $quant quantization. Recommended: $minDevices+ mobile devices.",
             samplePrompt = "Explain the fundamental advantages of dynamic layer partitioning across distributed edge devices:",
             huggingFaceRepo = repoId,
             downloadUrl = downloadUrl,
@@ -186,7 +264,11 @@ class HuggingFaceClient {
             fileFormat = "GGUF",
             recommendedMinDevices = minDevices,
             singleDeviceOomWarning = isMassive,
-            isStarterTestModel = paramCount < 0.3
+            isStarterTestModel = paramCount < 0.2,
+            quantization = quant,
+            isSuitableForMobile = isSuitable,
+            downloadsCount = downloads,
+            likesCount = likes
         )
     }
 
@@ -194,11 +276,12 @@ class HuggingFaceClient {
         val lower = fileName.lowercase()
         val quants = listOf(
             "q2_k_s", "q2_k_l", "q2_k",
-            "q3_k_s", "q3_k_m", "q3_k_l", "q3_k",
-            "q4_k_s", "q4_k_m", "q4_k", "q4_0", "q4_1",
-            "q5_k_s", "q5_k_m", "q5_k", "q5_0", "q5_1",
-            "q6_k",
+            "q3_k_s", "q3_k_m", "q3_k_l", "q3_k_xl", "q3_k",
+            "q4_k_s", "q4_k_m", "q4_k_l", "q4_k", "q4_0_4_4", "q4_0_4_8", "q4_0_8_8", "q4_0", "q4_1",
+            "q5_k_s", "q5_k_m", "q5_k_l", "q5_k", "q5_0", "q5_1",
+            "q6_k_l", "q6_k",
             "q8_0", "q8_k",
+            "iq1_s", "iq1_m", "iq2_xxs", "iq2_xs", "iq2_s", "iq2_m", "iq3_xxs", "iq3_xs", "iq3_s", "iq3_m", "iq4_nl", "iq4_xs",
             "fp16", "f16", "bf16", "fp32"
         )
 
@@ -216,14 +299,15 @@ class HuggingFaceClient {
             val unit = matcher.group(2)?.lowercase() ?: "b"
             return if (unit == "m") num / 1000.0 else num
         }
-        return 1.5 // Default reasonable mobile parameter estimate
+        return 1.5
     }
 
     private fun inferLayers(paramCount: Double): Int {
         return when {
-            paramCount >= 30.0 -> 60
+            paramCount >= 30.0 -> 64
             paramCount >= 14.0 -> 48
-            paramCount >= 7.0 -> 32
+            paramCount >= 8.0 -> 32
+            paramCount >= 6.0 -> 28
             paramCount >= 3.0 -> 28
             paramCount >= 1.0 -> 24
             paramCount >= 0.5 -> 24
@@ -254,9 +338,9 @@ class HuggingFaceClient {
 
     private fun estimateSizeBytes(paramCount: Double, quant: String): Long {
         val bytesPerParam = when {
-            quant.contains("Q2") -> 0.35
-            quant.contains("Q3") -> 0.48
-            quant.contains("Q4") -> 0.60
+            quant.contains("Q2") || quant.contains("IQ2") -> 0.35
+            quant.contains("Q3") || quant.contains("IQ3") -> 0.48
+            quant.contains("Q4") || quant.contains("IQ4") -> 0.60
             quant.contains("Q5") -> 0.72
             quant.contains("Q6") -> 0.85
             quant.contains("Q8") -> 1.10

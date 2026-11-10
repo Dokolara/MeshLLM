@@ -102,6 +102,19 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvQuantBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="GGUF"
+                android:textColor="@color/accent"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/tvModelRam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
