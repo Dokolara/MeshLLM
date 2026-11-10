@@ -12,14 +12,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header: Local Node Status -->
+        <!-- Header: Node Hub & P2P Status -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="#171D27"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#273244"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -37,21 +39,21 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🌐 Node Topology &amp; P2P"
+                        android:text="🌐 Node Hub &amp; P2P Topology"
                         android:textColor="@color/text_primary"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvCurrentRoleStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#263238"
+                        android:background="#1E293B"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="4dp"
                         android:text="Role: Unassigned"
-                        android:textColor="#AAAAAA"
-                        android:textSize="12sp"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -60,10 +62,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:fontFamily="monospace"
                     android:text="Local IP: Checking... | Node: -"
                     android:textColor="@color/accent"
-                    android:textSize="13sp"
-                    android:fontFamily="monospace" />
+                    android:textSize="12sp" />
 
                 <!-- Role Action Buttons -->
                 <LinearLayout
@@ -81,47 +83,67 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnStartMaster"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="44dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
                             android:backgroundTint="@color/badge_master"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                             android:text="Start Master"
                             android:textAllCaps="false"
-                            android:textSize="13sp" />
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="8dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnScanQrJoin"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="44dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:backgroundTint="@color/accent"
-                            android:text="📷 Scan QR to Join"
+                            android:backgroundTint="@color/primary"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="📷 Scan QR"
                             android:textAllCaps="false"
-                            android:textSize="13sp" />
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="8dp" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnJoinSlave"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="6dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:text="Manual IP / Port Connect"
                         android:textAllCaps="false"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="#334155" />
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDisconnect"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
                     android:backgroundTint="@color/status_red"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:text="Disconnect / Reset Node"
                     android:textAllCaps="false"
-                    android:visibility="gone" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:cornerRadius="8dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -132,9 +154,11 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="#1A237E"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="#171D27"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#273244"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -145,9 +169,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔑 Cluster Session &amp; Pairing QR"
+                    android:text="🔑 Cluster Session &amp; Pairing"
                     android:textColor="#82B1FF"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <!-- QR Code View for Master -->
@@ -155,26 +179,26 @@
                     android:id="@+id/layoutMasterQr"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:layout_marginTop="10dp"
                     android:visibility="gone">
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="8dp"
-                        app:cardElevation="3dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="#FFFFFF"
                         app:strokeWidth="2dp">
 
                         <ImageView
                             android:id="@+id/ivMasterQrCode"
-                            android:layout_width="200dp"
-                            android:layout_height="200dp"
+                            android:layout_width="160dp"
+                            android:layout_height="160dp"
                             android:background="#FFFFFF"
-                            android:padding="8dp"
-                            android:contentDescription="Master Node Connection QR Code" />
+                            android:contentDescription="Master Node Connection QR Code"
+                            android:padding="6dp" />
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView
@@ -182,10 +206,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="📷 Scan this QR code from slave devices to join instantly"
+                        android:text="📷 Tap QR to enlarge or scan with slave node"
                         android:textColor="#80D8FF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -203,70 +226,23 @@
                         android:fontFamily="monospace"
                         android:text="MESH-XXXX-XXXX"
                         android:textColor="#FFFFFF"
-                        android:textSize="18sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnCopyToken"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="36dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:text="Copy"
                         android:textAllCaps="false"
-                        android:textColor="#82B1FF" />
+                        android:textColor="#82B1FF"
+                        android:textSize="12sp"
+                        app:cornerRadius="6dp"
+                        app:strokeColor="#3F51B5" />
                 </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Slave devices can scan the QR code above or enter the session token to authenticate."
-                    android:textColor="#B0BEC5"
-                    android:textSize="11sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Failover & Resiliency Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🛡️ Failover &amp; Resiliency Protocol"
-                    android:textColor="@color/accent"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvFailoverStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Leader Election: First successor node automatically promotes to Master on disconnect."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/tvSeniorityInfo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Local Seniority: - | Heartbeat: OK"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp"
-                    android:fontFamily="monospace" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -275,9 +251,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="#171D27"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#273244"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -290,7 +268,7 @@
                     android:layout_height="wrap_content"
                     android:text="⚡ Sequential Layer Pipeline"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -298,12 +276,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:background="#121212"
+                    android:background="#0A0E14"
                     android:fontFamily="monospace"
-                    android:padding="10dp"
+                    android:padding="8dp"
                     android:text="[Embedding] ➔ [Node 1 (Local): L0..N] ➔ [Output Head]"
                     android:textColor="#00E676"
                     android:textSize="11sp" />
+
+                <!-- Seniority / Failover status summary -->
+                <TextView
+                    android:id="@+id/tvSeniorityInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="monospace"
+                    android:text="Local Seniority: - | Heartbeat: OK"
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvFailoverStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Leader Election: Successor promotes automatically on disconnect."
+                    android:textColor="#64748B"
+                    android:textSize="10sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -314,9 +312,11 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="#171D27"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeColor="#273244"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -327,25 +327,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚙️ Layer Allotment Mode"
+                    android:text="⚙️ Layer Balancing Mode"
                     android:textColor="@color/accent"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Select how transformer blocks are distributed across connected nodes."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
 
                 <!-- Allotment Mode Selection -->
                 <RadioGroup
                     android:id="@+id/rgAllotmentMode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="6dp">
 
                     <RadioButton
                         android:id="@+id/rbAllotmentAuto"
@@ -354,7 +346,7 @@
                         android:checked="true"
                         android:text="Automatic (Dynamic Benchmark Capacity)"
                         android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
 
                     <RadioButton
                         android:id="@+id/rbAllotmentManual"
@@ -362,7 +354,7 @@
                         android:layout_height="wrap_content"
                         android:text="Manual (Custom Continuous Layer Slicing)"
                         android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
                 </RadioGroup>
 
                 <!-- Manual Sliders Section (Visible in Manual Mode) -->
@@ -370,14 +362,14 @@
                     android:id="@+id/layoutManualAllotment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="8dp"
                     android:orientation="vertical"
                     android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjust sliders to allocate contiguous layers to each device. Setting a slider to 0 completely bypasses that node (no data or computation flows through it)."
+                        android:text="Assign layer counts per node. Setting 0 bypasses that device."
                         android:textColor="#80D8FF"
                         android:textSize="11sp" />
 
@@ -386,7 +378,7 @@
                         android:id="@+id/layoutSlidersContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="6dp"
                         android:orientation="vertical" />
 
                     <!-- Allotment Summary / Validation -->
@@ -395,43 +387,51 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:background="#121212"
+                        android:background="#0A0E14"
                         android:fontFamily="monospace"
-                        android:padding="8dp"
+                        android:padding="6dp"
                         android:text="Assigned: 0 / 0 Layers"
                         android:textColor="@color/accent"
-                        android:textSize="12sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <!-- Actions -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="8dp"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnDistributeEvenly"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
-                            android:text="Distribute Evenly"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="Even Split"
                             android:textAllCaps="false"
                             android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            app:cornerRadius="8dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnApplyAllotment"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
                             android:backgroundTint="@color/status_green"
-                            android:text="Apply Allotment"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="Apply"
                             android:textAllCaps="false"
-                            android:textSize="12sp" />
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="8dp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -451,7 +451,7 @@
                 android:layout_weight="1"
                 android:text="Connected Mesh Devices"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -460,7 +460,7 @@
                 android:layout_height="wrap_content"
                 android:text="0 Nodes"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

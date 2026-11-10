@@ -12,7 +12,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.meshllm.node.R
@@ -54,78 +56,82 @@ class TelemetryFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.sensorMetrics.collect { metrics ->
-                binding.tvBatteryPct.text = "${metrics.batteryPercent}%"
-                binding.tvChargingState.text = if (metrics.isCharging) "Charging (${metrics.chargingSource})" else "Discharging"
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.sensorMetrics.collect { metrics ->
+                        binding.tvBatteryPct.text = "${metrics.batteryPercent}%"
+                        binding.tvChargingState.text = if (metrics.isCharging) "Charging (${metrics.chargingSource})" else "Discharging"
 
-                binding.tvBatteryTemp.text = "${metrics.batteryTemperatureC}°C"
-                when {
-                    metrics.batteryTemperatureC > 42.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FF5252"))
-                    metrics.batteryTemperatureC > 38.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FFA726"))
-                    else -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#66BB6A"))
+                        binding.tvBatteryTemp.text = "${metrics.batteryTemperatureC}°C"
+                        when {
+                            metrics.batteryTemperatureC > 42.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FF5252"))
+                            metrics.batteryTemperatureC > 38.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FFA726"))
+                            else -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#66BB6A"))
+                        }
+
+                        binding.tvBatteryVoltage.text = "Voltage: ${metrics.batteryVoltageMv} mV"
+
+                        binding.tvThermalStatus.text = "Thermal: ${metrics.thermalStatusString}"
+                        val healthMult = Math.round(metrics.computeHealthFactor() * 100.0) / 100.0
+                        binding.tvHealthScore.text = "Health: ${healthMult}x"
+
+                        val throttleMs = when {
+                            metrics.batteryTemperatureC > 44.0 -> "200ms (Heavy Throttle)"
+                            metrics.batteryTemperatureC > 40.0 -> "50ms (Light Throttle)"
+                            else -> "0ms (Normal)"
+                        }
+                        binding.tvGovernorDetails.text = "Throttle Delay: $throttleMs • Priority: THREAD_PRIORITY_BACKGROUND • Dynamic Health Factor: ${healthMult}x"
+
+                        // RAM Breakdown (Red=LLM, Grey=System & Other Apps, Empty=Free)
+                        val usedRamMb = Math.round((metrics.totalRamMb - metrics.availableRamMb) * 10.0) / 10.0
+                        binding.tvRamTotal.text = "Total: ${metrics.totalRamMb} MB • Used: ${usedRamMb} MB"
+
+                        val llmRamPercent = metrics.llmRamPercent
+                        val sysRamPercent = metrics.systemRamPercent
+                        val emptyRamPercent = (100f - llmRamPercent - sysRamPercent).coerceAtLeast(0f)
+
+                        setSegmentWeight(binding.viewRamLlm, llmRamPercent)
+                        setSegmentWeight(binding.viewRamSystem, sysRamPercent)
+                        setSegmentWeight(binding.viewRamEmpty, emptyRamPercent)
+
+                        val llmMb = Math.round(metrics.modelRamAllocatedMb * 10.0) / 10.0
+                        val sysMb = Math.round(metrics.systemAndOtherAppsRamMb * 10.0) / 10.0
+
+                        binding.tvRamLlm.text = "● LLM: ${llmMb} MB (${String.format("%.1f", llmRamPercent)}%)"
+                        binding.tvRamSystem.text = "● System & Other Apps: ${sysMb} MB (${String.format("%.1f", sysRamPercent)}%)"
+
+                        // CPU Breakdown (Red=LLM, Grey=System & Other Apps, Empty=Idle)
+                        val cores = Runtime.getRuntime().availableProcessors()
+                        val totalCpu = String.format("%.1f", metrics.totalCpuPercent)
+                        binding.tvCpuCores.text = "$cores Cores • Load: $totalCpu%"
+
+                        val llmCpuPercent = metrics.llmCpuPercent
+                        val sysCpuPercent = metrics.systemCpuPercent
+                        val emptyCpuPercent = (100f - llmCpuPercent - sysCpuPercent).coerceAtLeast(0f)
+
+                        setSegmentWeight(binding.viewCpuLlm, llmCpuPercent)
+                        setSegmentWeight(binding.viewCpuSystem, sysCpuPercent)
+                        setSegmentWeight(binding.viewCpuEmpty, emptyCpuPercent)
+
+                        binding.tvCpuLlm.text = "● LLM: ${String.format("%.1f", llmCpuPercent)}%"
+                        binding.tvCpuSystem.text = "● System & Other Apps: ${String.format("%.1f", sysCpuPercent)}%"
+                    }
                 }
 
-                binding.tvBatteryVoltage.text = "Voltage: ${metrics.batteryVoltageMv} mV"
-
-                binding.tvThermalStatus.text = "Thermal: ${metrics.thermalStatusString}"
-                val healthMult = Math.round(metrics.computeHealthFactor() * 100.0) / 100.0
-                binding.tvHealthScore.text = "Health: ${healthMult}x"
-
-                val throttleMs = when {
-                    metrics.batteryTemperatureC > 44.0 -> "200ms (Heavy Throttle)"
-                    metrics.batteryTemperatureC > 40.0 -> "50ms (Light Throttle)"
-                    else -> "0ms (Normal)"
-                }
-                binding.tvGovernorDetails.text = "Throttle Delay: $throttleMs • Priority: THREAD_PRIORITY_BACKGROUND • Dynamic Health Factor: ${healthMult}x"
-
-                // RAM Breakdown (Red=LLM, Grey=System & Other Apps, Empty=Free)
-                val usedRamMb = Math.round((metrics.totalRamMb - metrics.availableRamMb) * 10.0) / 10.0
-                binding.tvRamTotal.text = "Total: ${metrics.totalRamMb} MB • Used: ${usedRamMb} MB"
-
-                val llmRamPercent = metrics.llmRamPercent
-                val sysRamPercent = metrics.systemRamPercent
-                val emptyRamPercent = (100f - llmRamPercent - sysRamPercent).coerceAtLeast(0f)
-
-                setSegmentWeight(binding.viewRamLlm, llmRamPercent)
-                setSegmentWeight(binding.viewRamSystem, sysRamPercent)
-                setSegmentWeight(binding.viewRamEmpty, emptyRamPercent)
-
-                val llmMb = Math.round(metrics.modelRamAllocatedMb * 10.0) / 10.0
-                val sysMb = Math.round(metrics.systemAndOtherAppsRamMb * 10.0) / 10.0
-
-                binding.tvRamLlm.text = "● LLM: ${llmMb} MB (${String.format("%.1f", llmRamPercent)}%)"
-                binding.tvRamSystem.text = "● System & Other Apps: ${sysMb} MB (${String.format("%.1f", sysRamPercent)}%)"
-
-                // CPU Breakdown (Red=LLM, Grey=System & Other Apps, Empty=Idle)
-                val cores = Runtime.getRuntime().availableProcessors()
-                val totalCpu = String.format("%.1f", metrics.totalCpuPercent)
-                binding.tvCpuCores.text = "$cores Cores • Load: $totalCpu%"
-
-                val llmCpuPercent = metrics.llmCpuPercent
-                val sysCpuPercent = metrics.systemCpuPercent
-                val emptyCpuPercent = (100f - llmCpuPercent - sysCpuPercent).coerceAtLeast(0f)
-
-                setSegmentWeight(binding.viewCpuLlm, llmCpuPercent)
-                setSegmentWeight(binding.viewCpuSystem, sysCpuPercent)
-                setSegmentWeight(binding.viewCpuEmpty, emptyCpuPercent)
-
-                binding.tvCpuLlm.text = "● LLM: ${String.format("%.1f", llmCpuPercent)}%"
-                binding.tvCpuSystem.text = "● System & Other Apps: ${String.format("%.1f", sysCpuPercent)}%"
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.benchmarkProfile.collect { profile ->
-                if (profile != null) {
-                    binding.tvBenchmarkStatus.text = "Profile Loaded from Cache (Tests Skipped)"
-                    binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#00E676"))
-                    binding.tvBenchmarkSummary.text = "Compute: ${profile.computeScoreGflops} GFLOPS • Mem: ${profile.memoryBandwidthMbPerSec} MB/s • Cores: ${profile.cpuCoreCount} • Capacity: ${profile.compositeCapacityScore} pts"
-                    binding.btnRunBenchmark.text = "Re-Run Benchmark"
-                } else {
-                    binding.tvBenchmarkStatus.text = "Not Benchmarked (First Launch)"
-                    binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#FFAB00"))
-                    binding.tvBenchmarkSummary.text = "Run benchmark to profile device compute and capacity"
-                    binding.btnRunBenchmark.text = "Run Benchmark"
+                launch {
+                    viewModel.benchmarkProfile.collect { profile ->
+                        if (profile != null) {
+                            binding.tvBenchmarkStatus.text = "Profile Loaded from Cache (Tests Skipped)"
+                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#00E676"))
+                            binding.tvBenchmarkSummary.text = "Compute: ${profile.computeScoreGflops} GFLOPS • Mem: ${profile.memoryBandwidthMbPerSec} MB/s • Cores: ${profile.cpuCoreCount} • Capacity: ${profile.compositeCapacityScore} pts"
+                            binding.btnRunBenchmark.text = "Re-Run Benchmark"
+                        } else {
+                            binding.tvBenchmarkStatus.text = "Not Benchmarked (First Launch)"
+                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#FFAB00"))
+                            binding.tvBenchmarkSummary.text = "Run benchmark to profile device compute and capacity"
+                            binding.btnRunBenchmark.text = "Run Benchmark"
+                        }
+                    }
                 }
             }
         }

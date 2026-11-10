@@ -566,13 +566,20 @@ class DistributedOrchestrator(
 
                         currentOutput += textPiece
                         lastTokenId = result.generatedTokenId
-                        _clusterState.value = _clusterState.value.copy(
-                            generatedOutput = currentOutput,
-                            tokensGenerated = tokenIdx + 1
-                        )
+
+                        // High-frequency token callback decoupled from heavyweight clusterState emissions
                         onTokenGenerated?.invoke(textPiece, tokenIdx + 1, result.isFinished)
                         hopLogs.append("• Token ${tokenIdx + 1}: ID=$sampledTok ('${textPiece.replace("\n", "\\n")}')\n")
-                        onPipelineTrace?.invoke(hopLogs.toString(), currentTokPerSec, firstTokenMs)
+
+                        // Throttled pipeline hop trace and cluster state (update every 5 tokens or upon completion)
+                        val shouldEmitTelemetry = (tokenIdx == 0 || (tokenIdx + 1) % 5 == 0 || result.isFinished)
+                        if (shouldEmitTelemetry) {
+                            _clusterState.value = _clusterState.value.copy(
+                                generatedOutput = currentOutput,
+                                tokensGenerated = tokenIdx + 1
+                            )
+                            onPipelineTrace?.invoke(hopLogs.toString(), currentTokPerSec, firstTokenMs)
+                        }
 
                         if (result.isFinished) break
                     } else {

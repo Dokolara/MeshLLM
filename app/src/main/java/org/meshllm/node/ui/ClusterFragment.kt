@@ -16,7 +16,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -271,100 +273,104 @@ class ClusterFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.currentRole.collect { role ->
-                when (role) {
-                    NodeRole.MASTER -> {
-                        binding.tvCurrentRoleStatus.text = "Role: MASTER (Orchestrator + Worker)"
-                        binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#B388FF"))
-                        binding.cardSessionToken.visibility = View.VISIBLE
-                        binding.cardLayerAllotment.visibility = View.VISIBLE
-                        binding.layoutRoleButtons.visibility = View.GONE
-                        binding.btnDisconnect.visibility = View.VISIBLE
-                        binding.tvSeniorityInfo.text = "Local Seniority: Master Orchestrator (Node 0)"
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.currentRole.collect { role ->
+                        when (role) {
+                            NodeRole.MASTER -> {
+                                binding.tvCurrentRoleStatus.text = "Role: MASTER (Orchestrator + Worker)"
+                                binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#B388FF"))
+                                binding.cardSessionToken.visibility = View.VISIBLE
+                                binding.cardLayerAllotment.visibility = View.VISIBLE
+                                binding.layoutRoleButtons.visibility = View.GONE
+                                binding.btnDisconnect.visibility = View.VISIBLE
+                                binding.tvSeniorityInfo.text = "Local Seniority: Master Orchestrator (Node 0)"
+                                refreshMasterQrDisplay()
+                            }
+                            NodeRole.SLAVE -> {
+                                binding.tvCurrentRoleStatus.text = "Role: SLAVE (Mesh Worker)"
+                                binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#80D8FF"))
+                                binding.cardSessionToken.visibility = View.VISIBLE
+                                binding.cardLayerAllotment.visibility = View.GONE
+                                binding.layoutMasterQr.visibility = View.GONE
+                                binding.layoutRoleButtons.visibility = View.GONE
+                                binding.btnDisconnect.visibility = View.VISIBLE
+                            }
+                            else -> {
+                                binding.tvCurrentRoleStatus.text = "Role: Unassigned (Idle)"
+                                binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#AAAAAA"))
+                                binding.cardSessionToken.visibility = View.GONE
+                                binding.cardLayerAllotment.visibility = View.GONE
+                                binding.layoutMasterQr.visibility = View.GONE
+                                binding.layoutRoleButtons.visibility = View.VISIBLE
+                                binding.btnDisconnect.visibility = View.GONE
+                                binding.tvSeniorityInfo.text = "Local Seniority: - | Heartbeat: Idle"
+                            }
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.sessionToken.collect { token ->
+                        binding.tvSessionToken.text = if (token.isNotEmpty()) token else "MESH-XXXX-XXXX"
                         refreshMasterQrDisplay()
                     }
-                    NodeRole.SLAVE -> {
-                        binding.tvCurrentRoleStatus.text = "Role: SLAVE (Mesh Worker)"
-                        binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#80D8FF"))
-                        binding.cardSessionToken.visibility = View.VISIBLE
-                        binding.cardLayerAllotment.visibility = View.GONE
-                        binding.layoutMasterQr.visibility = View.GONE
-                        binding.layoutRoleButtons.visibility = View.GONE
-                        binding.btnDisconnect.visibility = View.VISIBLE
-                    }
-                    else -> {
-                        binding.tvCurrentRoleStatus.text = "Role: Unassigned (Idle)"
-                        binding.tvCurrentRoleStatus.setTextColor(Color.parseColor("#AAAAAA"))
-                        binding.cardSessionToken.visibility = View.GONE
-                        binding.cardLayerAllotment.visibility = View.GONE
-                        binding.layoutMasterQr.visibility = View.GONE
-                        binding.layoutRoleButtons.visibility = View.VISIBLE
-                        binding.btnDisconnect.visibility = View.GONE
-                        binding.tvSeniorityInfo.text = "Local Seniority: - | Heartbeat: Idle"
+                }
+
+                launch {
+                    viewModel.activeModel.collect {
+                        refreshMasterQrDisplay()
+                        if (binding.layoutManualAllotment.visibility == View.VISIBLE) {
+                            refreshNodeSliders(viewModel.clusterState.value)
+                        }
                     }
                 }
-            }
-        }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.sessionToken.collect { token ->
-                binding.tvSessionToken.text = if (token.isNotEmpty()) token else "MESH-XXXX-XXXX"
-                refreshMasterQrDisplay()
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.activeModel.collect {
-                refreshMasterQrDisplay()
-                if (binding.layoutManualAllotment.visibility == View.VISIBLE) {
-                    refreshNodeSliders(viewModel.clusterState.value)
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.localIp.collect { ip ->
-                binding.tvLocalIpPort.text = "IP: $ip:${viewModel.localPort} | Node ID: ${viewModel.localNodeId}"
-                refreshMasterQrDisplay()
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.clusterState.collect { state ->
-                binding.tvClusterSummary.text = "${state.nodes.size} Nodes • Total ${state.totalLayers} Layers (${state.modelName})"
-                nodeAdapter.updateNodes(state.nodes)
-
-                // Sync allotment mode radio selection
-                if (state.layerAllotmentMode == org.meshllm.node.model.ClusterState.ALLOTMENT_MODE_MANUAL) {
-                    if (!binding.rbAllotmentManual.isChecked) binding.rbAllotmentManual.isChecked = true
-                    binding.layoutManualAllotment.visibility = View.VISIBLE
-                    refreshNodeSliders(state)
-                } else {
-                    if (!binding.rbAllotmentAuto.isChecked) binding.rbAllotmentAuto.isChecked = true
-                    binding.layoutManualAllotment.visibility = View.GONE
-                }
-
-                // Update Sequential Pipeline visualizer
-                if (state.nodes.isEmpty()) {
-                    binding.tvPipelineDiagram.text = "[Pipeline Idle]\nStart as Master or Join an existing network to form an inference pipeline."
-                } else {
-                    val sb = StringBuilder()
-                    sb.append("[Model: ${state.modelName} • ${state.totalLayers} Layers]\n")
-                    state.nodes.sortedBy { it.joinOrder }.forEachIndexed { index, node ->
-                        val block = node.assignedBlocks.firstOrNull()
-                        val layerRange = if (block != null) "Layers ${block.startLayer}..${block.endLayer} (${block.layerCount}L)" else "0 Layers Assigned (Bypassed)"
-                        val arrow = if (index < state.nodes.size - 1) " ➔ " else " ➔ [Output Head]"
-                        sb.append("• [Node ${node.joinOrder} (${node.role.name})]: $layerRange$arrow\n")
+                launch {
+                    viewModel.localIp.collect { ip ->
+                        binding.tvLocalIpPort.text = "IP: $ip:${viewModel.localPort} | Node ID: ${viewModel.localNodeId}"
+                        refreshMasterQrDisplay()
                     }
-                    binding.tvPipelineDiagram.text = sb.toString().trimEnd()
                 }
 
-                // If slave, show seniority & failover rank
-                if (viewModel.currentRole.value == NodeRole.SLAVE) {
-                    val me = state.nodes.find { it.nodeId == viewModel.localNodeId }
-                    if (me != null) {
-                        val isNext = me.joinOrder == 1
-                        binding.tvSeniorityInfo.text = "Local Join Order: #${me.joinOrder} ${if (isNext) "★ (NEXT IN LINE TO BECOME MASTER)" else "(Successor Backup)"}"
+                launch {
+                    viewModel.clusterState.collect { state ->
+                        binding.tvClusterSummary.text = "${state.nodes.size} Nodes • Total ${state.totalLayers} Layers (${state.modelName})"
+                        nodeAdapter.updateNodes(state.nodes)
+
+                        // Sync allotment mode radio selection
+                        if (state.layerAllotmentMode == org.meshllm.node.model.ClusterState.ALLOTMENT_MODE_MANUAL) {
+                            if (!binding.rbAllotmentManual.isChecked) binding.rbAllotmentManual.isChecked = true
+                            binding.layoutManualAllotment.visibility = View.VISIBLE
+                            refreshNodeSliders(state)
+                        } else {
+                            if (!binding.rbAllotmentAuto.isChecked) binding.rbAllotmentAuto.isChecked = true
+                            binding.layoutManualAllotment.visibility = View.GONE
+                        }
+
+                        // Update Sequential Pipeline visualizer
+                        if (state.nodes.isEmpty()) {
+                            binding.tvPipelineDiagram.text = "[Pipeline Idle]\nStart as Master or Join an existing network to form an inference pipeline."
+                        } else {
+                            val sb = StringBuilder()
+                            sb.append("[Model: ${state.modelName} • ${state.totalLayers} Layers]\n")
+                            state.nodes.sortedBy { it.joinOrder }.forEachIndexed { index, node ->
+                                val block = node.assignedBlocks.firstOrNull()
+                                val layerRange = if (block != null) "Layers ${block.startLayer}..${block.endLayer} (${block.layerCount}L)" else "0 Layers Assigned (Bypassed)"
+                                val arrow = if (index < state.nodes.size - 1) " ➔ " else " ➔ [Output Head]"
+                                sb.append("• [Node ${node.joinOrder} (${node.role.name})]: $layerRange$arrow\n")
+                            }
+                            binding.tvPipelineDiagram.text = sb.toString().trimEnd()
+                        }
+
+                        // If slave, show seniority & failover rank
+                        if (viewModel.currentRole.value == NodeRole.SLAVE) {
+                            val me = state.nodes.find { it.nodeId == viewModel.localNodeId }
+                            if (me != null) {
+                                val isNext = me.joinOrder == 1
+                                binding.tvSeniorityInfo.text = "Local Join Order: #${me.joinOrder} ${if (isNext) "★ (NEXT IN LINE TO BECOME MASTER)" else "(Successor Backup)"}"
+                            }
+                        }
                     }
                 }
             }

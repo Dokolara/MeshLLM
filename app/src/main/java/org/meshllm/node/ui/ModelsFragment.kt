@@ -11,7 +11,9 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.launch
 import org.meshllm.node.databinding.FragmentModelsBinding
@@ -157,105 +159,109 @@ class ModelsFragment : Fragment() {
 
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.activeModel.collect { model ->
-                binding.tvActiveModelName.text = model.name
-                binding.tvActiveModelArchitecture.text = "${model.totalLayers} Layers • Hidden: ${model.hiddenDim} • Heads: ${model.numHeads} • ${model.fileSizeDisplay}"
-                binding.tvActiveModelCategoryBadge.text = model.category
-                binding.tvActiveModelDesc.text = model.description
-                binding.tvActiveModelOomAlert.visibility = if (model.singleDeviceOomWarning) View.VISIBLE else View.GONE
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.activeModel.collect { model ->
+                        binding.tvActiveModelName.text = model.name
+                        binding.tvActiveModelArchitecture.text = "${model.totalLayers} Layers • Hidden: ${model.hiddenDim} • Heads: ${model.numHeads} • ${model.fileSizeDisplay}"
+                        binding.tvActiveModelCategoryBadge.text = model.category
+                        binding.tvActiveModelDesc.text = model.description
+                        binding.tvActiveModelOomAlert.visibility = if (model.singleDeviceOomWarning) View.VISIBLE else View.GONE
 
-                updateDownloadCardUi(model)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.downloadStates.collect { states ->
-                val active = viewModel.activeModel.value
-                updateDownloadCardUi(active)
-                states.keys.forEach { modelId ->
-                    modelAdapter.notifyModelStatusChanged(modelId)
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.clusterState.collect {
-                updateDownloadCardUi(viewModel.activeModel.value)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.weightFilePath.collect { path ->
-                binding.tvWeightFilePath.text = path
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.weightFormatInspection.collect { format ->
-                binding.tvWeightFormatDetails.text = format
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.catalogModels.collect { models ->
-                if (!viewModel.isHfSearching.value) {
-                    binding.tvCatalogCount.text = "${models.size} Models Available"
-                }
-                modelAdapter.updateData(models, viewModel.activeModel.value.id)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isHfSearching.collect { searching ->
-                if (searching) {
-                    binding.tvCatalogCount.text = "Searching Hugging Face... 🌐"
-                } else {
-                    binding.tvCatalogCount.text = "${viewModel.catalogModels.value.size} Models Available"
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isModelPreloading.collect { isPreloading ->
-                binding.pbRamPreload.visibility = if (isPreloading) View.VISIBLE else View.GONE
-                binding.btnPreloadWeightsToRam.isEnabled = !isPreloading && viewModel.modelDownloadManager.isModelDownloaded(viewModel.activeModel.value)
-                binding.btnClearRamWeights.isEnabled = !isPreloading && viewModel.isModelInRam.value
-                if (isPreloading) {
-                    binding.tvRamStatusBadge.text = "LOADING TO RAM..."
-                    binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#FF9800"))
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isModelInRam.collect { isInRam ->
-                val ramMb = viewModel.modelAllocatedRamMb.value
-                if (!viewModel.isModelPreloading.value) {
-                    if (isInRam) {
-                        binding.tvRamStatusBadge.text = "LOADED IN RAM (${ramMb} MB)"
-                        binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#1B5E20"))
-                        binding.btnPreloadWeightsToRam.text = "Reload in RAM"
-                        binding.btnClearRamWeights.isEnabled = true
-                    } else {
-                        binding.tvRamStatusBadge.text = "NOT IN RAM"
-                        binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#424242"))
-                        binding.btnPreloadWeightsToRam.text = "Load Weights to RAM"
-                        binding.btnClearRamWeights.isEnabled = false
+                        updateDownloadCardUi(model)
                     }
                 }
-            }
-        }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.ramStatusDescription.collect { status ->
-                binding.tvRamPreloadStatus.text = status
-            }
-        }
+                launch {
+                    viewModel.downloadStates.collect { states ->
+                        val active = viewModel.activeModel.value
+                        updateDownloadCardUi(active)
+                        states.keys.forEach { modelId ->
+                            modelAdapter.notifyModelStatusChanged(modelId)
+                        }
+                    }
+                }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.modelAllocatedRamMb.collect { ramMb ->
-                if (viewModel.isModelInRam.value && !viewModel.isModelPreloading.value) {
-                    binding.tvRamStatusBadge.text = "LOADED IN RAM (${ramMb} MB)"
+                launch {
+                    viewModel.clusterState.collect {
+                        updateDownloadCardUi(viewModel.activeModel.value)
+                    }
+                }
+
+                launch {
+                    viewModel.weightFilePath.collect { path ->
+                        binding.tvWeightFilePath.text = path
+                    }
+                }
+
+                launch {
+                    viewModel.weightFormatInspection.collect { format ->
+                        binding.tvWeightFormatDetails.text = format
+                    }
+                }
+
+                launch {
+                    viewModel.catalogModels.collect { models ->
+                        if (!viewModel.isHfSearching.value) {
+                            binding.tvCatalogCount.text = "${models.size} Models Available"
+                        }
+                        modelAdapter.updateData(models, viewModel.activeModel.value.id)
+                    }
+                }
+
+                launch {
+                    viewModel.isHfSearching.collect { searching ->
+                        if (searching) {
+                            binding.tvCatalogCount.text = "Searching Hugging Face... 🌐"
+                        } else {
+                            binding.tvCatalogCount.text = "${viewModel.catalogModels.value.size} Models Available"
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.isModelPreloading.collect { isPreloading ->
+                        binding.pbRamPreload.visibility = if (isPreloading) View.VISIBLE else View.GONE
+                        binding.btnPreloadWeightsToRam.isEnabled = !isPreloading && viewModel.modelDownloadManager.isModelDownloaded(viewModel.activeModel.value)
+                        binding.btnClearRamWeights.isEnabled = !isPreloading && viewModel.isModelInRam.value
+                        if (isPreloading) {
+                            binding.tvRamStatusBadge.text = "LOADING TO RAM..."
+                            binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#FF9800"))
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.isModelInRam.collect { isInRam ->
+                        val ramMb = viewModel.modelAllocatedRamMb.value
+                        if (!viewModel.isModelPreloading.value) {
+                            if (isInRam) {
+                                binding.tvRamStatusBadge.text = "LOADED IN RAM (${ramMb} MB)"
+                                binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#1B5E20"))
+                                binding.btnPreloadWeightsToRam.text = "Reload in RAM"
+                                binding.btnClearRamWeights.isEnabled = true
+                            } else {
+                                binding.tvRamStatusBadge.text = "NOT IN RAM"
+                                binding.tvRamStatusBadge.setBackgroundColor(Color.parseColor("#424242"))
+                                binding.btnPreloadWeightsToRam.text = "Load Weights to RAM"
+                                binding.btnClearRamWeights.isEnabled = false
+                            }
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.ramStatusDescription.collect { status ->
+                        binding.tvRamPreloadStatus.text = status
+                    }
+                }
+
+                launch {
+                    viewModel.modelAllocatedRamMb.collect { ramMb ->
+                        if (viewModel.isModelInRam.value && !viewModel.isModelPreloading.value) {
+                            binding.tvRamStatusBadge.text = "LOADED IN RAM (${ramMb} MB)"
+                        }
+                    }
                 }
             }
         }

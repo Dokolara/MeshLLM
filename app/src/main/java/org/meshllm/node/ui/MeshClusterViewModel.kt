@@ -66,6 +66,11 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
 
     private var orchestratorCollectJob: Job? = null
 
+    // High-performance token streaming buffer to eliminate UI freezes
+    private val tokenBuffer = StringBuilder()
+    private var lastTokenUiDispatchMs = 0L
+    private val UI_DISPATCH_INTERVAL_MS = 33L // ~30 FPS UI render cap
+
     // Observable states
     private val _currentRole = MutableStateFlow(NodeRole.UNASSIGNED)
     val currentRole: StateFlow<NodeRole> = _currentRole.asStateFlow()
@@ -625,11 +630,11 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         orchestratorCollectJob = viewModelScope.launch {
             orchestrator?.clusterState?.collect { state ->
                 _clusterState.value = state
-                if (state.generatedOutput.isNotEmpty() && _streamingOutput.value != state.generatedOutput) {
-                    _streamingOutput.value = state.generatedOutput
-                }
                 if (!state.isRunningInference) {
                     _isInferencing.value = false
+                    if (state.generatedOutput.isNotEmpty()) {
+                        _streamingOutput.value = state.generatedOutput
+                    }
                     if (_inferenceStatus.value.startsWith("Streaming") || _inferenceStatus.value.startsWith("Executing") || _inferenceStatus.value.startsWith("Loading")) {
                         _inferenceStatus.value = "Finished (${state.tokensGenerated} tokens)"
                     }
@@ -638,12 +643,19 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         }
 
         orchestrator?.onTokenGenerated = { piece, count, isFinished ->
-            viewModelScope.launch(Dispatchers.Main) {
-                val fullText = orchestrator?.clusterState?.value?.generatedOutput ?: ""
-                _streamingOutput.value = if (fullText.isNotEmpty()) fullText else piece
-                _generatedTokensCount.value = count
-                _inferenceStatus.value = if (isFinished) "Finished ($count tokens)" else "Streaming token $count..."
-                if (isFinished) _isInferencing.value = false
+            val now = android.os.SystemClock.elapsedRealtime()
+            synchronized(tokenBuffer) {
+                tokenBuffer.append(piece)
+            }
+            if (isFinished || (now - lastTokenUiDispatchMs) >= UI_DISPATCH_INTERVAL_MS) {
+                lastTokenUiDispatchMs = now
+                val fullText = synchronized(tokenBuffer) { tokenBuffer.toString() }
+                viewModelScope.launch(Dispatchers.Main) {
+                    _streamingOutput.value = fullText
+                    _generatedTokensCount.value = count
+                    _inferenceStatus.value = if (isFinished) "Finished ($count tokens)" else "Streaming token $count..."
+                    if (isFinished) _isInferencing.value = false
+                }
             }
         }
 
@@ -800,6 +812,8 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
 
         _isInferencing.value = true
         _streamingOutput.value = ""
+        synchronized(tokenBuffer) { tokenBuffer.clear() }
+        lastTokenUiDispatchMs = 0L
         _generatedTokensCount.value = 0
         _tokensPerSecond.value = 0.0
         _ttftLatencyMs.value = 0L
@@ -844,6 +858,7 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
 
     fun stopInference() {
         orchestrator?.stopInference()
+        synchronized(tokenBuffer) { tokenBuffer.clear() }
         _isInferencing.value = false
         _inferenceStatus.value = "Stopped"
     }
