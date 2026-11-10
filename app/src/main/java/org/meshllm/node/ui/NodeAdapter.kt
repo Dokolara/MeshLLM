@@ -71,13 +71,13 @@ class NodeAdapter : RecyclerView.Adapter<NodeAdapter.NodeViewHolder>() {
             tvDeviceName.text = node.deviceName
 
             if (node.role == NodeRole.MASTER) {
-                tvRoleBadge.text = "MASTER"
-                tvRoleBadge.setBackgroundColor(Color.parseColor("#311B92"))
-                tvRoleBadge.setTextColor(Color.parseColor("#B388FF"))
+                tvRoleBadge.text = "● MASTER"
+                tvRoleBadge.setBackgroundColor(Color.parseColor("#1E1B4B"))
+                tvRoleBadge.setTextColor(Color.parseColor("#A78BFA"))
             } else {
-                tvRoleBadge.text = "SLAVE"
-                tvRoleBadge.setBackgroundColor(Color.parseColor("#01579B"))
-                tvRoleBadge.setTextColor(Color.parseColor("#80D8FF"))
+                tvRoleBadge.text = "● WORKER"
+                tvRoleBadge.setBackgroundColor(Color.parseColor("#082F49"))
+                tvRoleBadge.setTextColor(Color.parseColor("#38BDF8"))
             }
 
             val orderDesc = if (node.joinOrder == 0) {
@@ -115,9 +115,9 @@ class NodeAdapter : RecyclerView.Adapter<NodeAdapter.NodeViewHolder>() {
             tvNodeSysRam.text = "Sys: ${sysMb}MB"
 
             if (!node.isAlive) {
-                tvRoleBadge.text = "DISCONNECTED"
-                tvRoleBadge.setBackgroundColor(Color.parseColor("#B71C1C"))
-                tvRoleBadge.setTextColor(Color.parseColor("#FF8A80"))
+                tvRoleBadge.text = "● OFFLINE"
+                tvRoleBadge.setBackgroundColor(Color.parseColor("#450A0A"))
+                tvRoleBadge.setTextColor(Color.parseColor("#F87171"))
             }
         }
 

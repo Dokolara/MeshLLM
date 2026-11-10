@@ -1,51 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/card_dark"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dev Mode / Benchmark Cache"
+        android:text="Benchmark Developer Mode"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:fontFamily="sans-serif-medium" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Skip benchmarks on install by creating a cached profile file."
-        android:textColor="@color/text_secondary"
-        android:textSize="13sp" />
+        android:text="Bypass physical benchmarks by persisting mock compute capacity scores."
+        android:textColor="@color/text_muted"
+        android:textSize="12sp"
+        android:lineSpacingExtra="2dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Mock Compute GFLOPS">
+        app:boxStrokeColor="@color/accent"
+        app:hintTextColor="@color/accent"
+        android:hint="Compute Score (GFLOPS)">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etDevGflops"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
+            android:textColor="@color/text_primary"
             android:text="14.5" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Mock Memory Bandwidth (MB/s)">
+        android:layout_marginTop="10dp"
+        app:boxStrokeColor="@color/accent"
+        app:hintTextColor="@color/accent"
+        android:hint="Memory Bandwidth (MB/s)">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etDevMemBw"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
+            android:textColor="@color/text_primary"
             android:text="4500" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -53,27 +62,36 @@
         android:id="@+id/tvCachePathInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_terminal_rounded"
+        android:padding="8dp"
+        android:fontFamily="monospace"
         android:text="Target: /data/user/0/org.meshllm.node/files/meshllm_bench_profile.json"
-        android:textColor="#AAAAAA"
-        android:textSize="11sp" />
+        android:textColor="@color/text_muted"
+        android:textSize="10sp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaveDevProfile"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="44dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="#00C853"
-        android:text="Save &amp; Cache to File (Skip Tests)"
-        android:textColor="#FFFFFF" />
+        android:backgroundTint="@color/accent"
+        app:cornerRadius="8dp"
+        android:text="Save &amp; Cache Mock Profile"
+        android:textAllCaps="false"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif-medium" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnClearCacheFile"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="Delete Cache File (Force Re-test)"
-        android:textColor="#FF5252" />
+        android:layout_marginTop="4dp"
+        android:text="Delete Cache (Force Re-test)"
+        android:textAllCaps="false"
+        android:textColor="@color/error"
+        android:textSize="12sp" />
 
 </LinearLayout>

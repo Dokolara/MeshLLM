@@ -21,7 +21,7 @@ class InferenceFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: MeshClusterViewModel by activityViewModels()
-    private var isTraceExpanded = true
+    private var isTraceExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -120,14 +120,14 @@ class InferenceFragment : Fragment() {
                         binding.btnRunInference.isEnabled = !isRunning && !isSlave
                         binding.btnStopInference.visibility = if (isRunning) View.VISIBLE else View.GONE
                         if (isSlave) {
-                            binding.btnRunInference.text = "Mesh Worker Active (Listening for Master)"
-                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#37474F"))
+                            binding.btnRunInference.text = "Worker Active (Waiting for Master)"
+                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#1E293B"))
                         } else if (isRunning) {
-                            binding.btnRunInference.text = "⚡ Generating Tokens..."
-                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#455A64"))
+                            binding.btnRunInference.text = "Generating Tokens..."
+                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#4F46E5"))
                         } else {
-                            binding.btnRunInference.text = "🚀 Run Distributed Inference"
-                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#00C853"))
+                            binding.btnRunInference.text = "Run Distributed Inference"
+                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#10B981"))
                         }
                     }
                 }
@@ -137,9 +137,9 @@ class InferenceFragment : Fragment() {
                         val isSlave = role == NodeRole.SLAVE
                         if (isSlave) {
                             binding.btnRunInference.isEnabled = false
-                            binding.btnRunInference.text = "Mesh Worker Active (Listening for Master)"
-                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#37474F"))
-                            binding.tvInferenceStatus.text = "Worker node connected. Awaiting pipeline activations from Master."
+                            binding.btnRunInference.text = "Worker Active (Waiting for Master)"
+                            binding.btnRunInference.setBackgroundColor(Color.parseColor("#1E293B"))
+                            binding.tvInferenceStatus.text = "● Worker Connected"
                         }
                     }
                 }
@@ -197,13 +197,13 @@ class InferenceFragment : Fragment() {
                         val isDownloaded = viewModel.modelDownloadManager.isModelDownloaded(viewModel.activeModel.value)
                         val modelRam = viewModel.modelAllocatedRamMb.value
                         if (isDownloaded) {
-                            binding.tvWeightSourceStatus.text = "✓ REAL WEIGHTS IN RAM: $format (Allocated: $modelRam MB)"
-                            binding.tvWeightSourceStatus.setBackgroundColor(Color.parseColor("#1B5E20"))
-                            binding.tvWeightSourceStatus.setTextColor(Color.parseColor("#A5D6A7"))
+                            binding.tvWeightSourceStatus.text = "Weights in RAM: $format (${modelRam.toInt()} MB)"
+                            binding.tvWeightSourceStatus.setBackgroundColor(Color.parseColor("#064E3B"))
+                            binding.tvWeightSourceStatus.setTextColor(Color.parseColor("#34D399"))
                         } else {
-                            binding.tvWeightSourceStatus.text = "⚠ MODEL NOT DOWNLOADED: Open 'Models' tab to download ${viewModel.activeModel.value.name} (${viewModel.activeModel.value.fileSizeDisplay}) before inference."
-                            binding.tvWeightSourceStatus.setBackgroundColor(Color.parseColor("#B71C1C"))
-                            binding.tvWeightSourceStatus.setTextColor(Color.parseColor("#FFCDD2"))
+                            binding.tvWeightSourceStatus.text = "Model Not Downloaded: Open 'Models' tab to download ${viewModel.activeModel.value.name} (${viewModel.activeModel.value.fileSizeDisplay})"
+                            binding.tvWeightSourceStatus.setBackgroundColor(Color.parseColor("#450A0A"))
+                            binding.tvWeightSourceStatus.setTextColor(Color.parseColor("#F87171"))
                         }
                     }
                 }
@@ -217,10 +217,10 @@ class InferenceFragment : Fragment() {
         val nodeCount = state.nodes.size.coerceAtLeast(1)
         val roleStr = when (viewModel.currentRole.value) {
             NodeRole.MASTER -> "Master"
-            NodeRole.SLAVE -> "Slave"
+            NodeRole.SLAVE -> "Worker"
             else -> "Local"
         }
-        binding.tvInferenceClusterInfo.text = "Model: ${model.name} (${model.paramCountStr}) • Pipeline: ${model.totalLayers} Layers across $nodeCount Nodes ($roleStr)"
+        binding.tvInferenceClusterInfo.text = "${model.name} • ${model.totalLayers} Layers • $nodeCount Nodes ($roleStr)"
     }
 
     override fun onDestroyView() {

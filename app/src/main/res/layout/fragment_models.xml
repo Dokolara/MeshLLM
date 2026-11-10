@@ -12,11 +12,12 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Title -->
+        <!-- Header -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📦 Model Catalog &amp; Storage"
+            android:letterSpacing="-0.01"
+            android:text="Model Hub &amp; Storage"
             android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -25,8 +26,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:layout_marginBottom="12dp"
-            android:text="Download open-source weights directly from Hugging Face or partition massive models (7B - 15B) across mesh phones."
+            android:layout_marginBottom="14dp"
+            android:text="Select open-weights to partition across mesh devices or download from Hugging Face."
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
@@ -35,15 +36,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -56,21 +59,21 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Active Cluster Model"
-                        android:textColor="@color/accent"
-                        android:textSize="12sp"
+                        android:text="Active Model"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvActiveModelCategoryBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#1565C0"
-                        android:paddingHorizontal="8dp"
+                        android:background="@drawable/bg_pill_badge"
+                        android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
                         android:text="Standard Edge"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textColor="@color/primary"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -78,7 +81,7 @@
                     android:id="@+id/tvActiveModelName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:text="TinyStories-15M"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
@@ -88,11 +91,11 @@
                     android:id="@+id/tvActiveModelArchitecture"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="monospace"
                     android:text="6 Layers • Hidden: 288 • Heads: 6 • ~60 MB"
-                    android:textColor="#80CBC4"
-                    android:textSize="12sp"
-                    android:fontFamily="monospace" />
+                    android:textColor="@color/accent_mint"
+                    android:textSize="12sp" />
 
                 <!-- OOM Crash Warning for Massive Models -->
                 <TextView
@@ -100,10 +103,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="#3E2723"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:padding="10dp"
-                    android:text="⚠️ Massive Model: Exceeds single mobile RAM (~3.0 GB free). Running locally will OOM crash without mesh partitioning across 4-8 phones!"
-                    android:textColor="#FFAB91"
+                    android:text="Large Model: Exceeds single phone RAM budget. Partitioning across multiple mesh nodes recommended."
+                    android:textColor="@color/status_orange"
                     android:textSize="11sp"
                     android:visibility="gone" />
 
@@ -112,26 +115,29 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.2"
                     android:text="Full 6-layer LLaMA architecture trained on synthetic child stories."
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 2: Download & Local Disk Storage Manager -->
+        <!-- Card 2: Download & Storage Manager -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -143,20 +149,20 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="💾 Storage &amp; Hugging Face Download"
+                        android:text="Storage &amp; Download"
                         android:textColor="@color/text_primary"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvDownloadStatusBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#E65100"
-                        android:paddingHorizontal="8dp"
+                        android:background="@drawable/bg_pill_badge"
+                        android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
                         android:text="NOT DOWNLOADED"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/status_orange"
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -166,7 +172,7 @@
                     android:id="@+id/pbModelDownload"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="8dp"
+                    android:layout_height="6dp"
                     android:layout_marginTop="10dp"
                     android:max="100"
                     android:progress="0"
@@ -178,12 +184,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Downloading from Hugging Face: 0 MB / 0 MB (0%)"
-                    android:textColor="@color/accent"
+                    android:text="0.0 MB / 0.0 MB (0%)"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     android:visibility="gone" />
 
-                <!-- Action buttons -->
+                <TextView
+                    android:id="@+id/tvDownloadSourceInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Source: Hugging Face (karpathy/tiny_llm)"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -193,29 +207,54 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDownloadAction"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="40dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:backgroundTint="@color/status_green"
+                        android:backgroundTint="@color/accent"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:text="Download Weights"
-                        android:textAllCaps="false" />
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="8dp"
+                        app:elevation="0dp" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnVerifyWeights"
+                        android:id="@+id/btnDeleteModel"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Verify File"
+                        android:layout_height="40dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:strokeColor="@color/border_subtle"
+                        android:text="Delete"
                         android:textAllCaps="false"
-                        android:textColor="@color/accent" />
+                        android:textColor="@color/status_red"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        app:cornerRadius="8dp" />
                 </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                <!-- RAM Preload & Memory Management Controls -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="12dp"
-                    android:background="#2E3440" />
+        <!-- Card 3: Node RAM Preload -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -227,7 +266,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="⚡ Node RAM Preload (Zero-TTFT)"
+                        android:text="Memory Allocation (RAM)"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -236,11 +275,11 @@
                         android:id="@+id/tvRamStatusBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#424242"
-                        android:paddingHorizontal="8dp"
+                        android:background="@drawable/bg_pill_badge"
+                        android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
                         android:text="NOT IN RAM"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_secondary"
                         android:textSize="10sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -250,7 +289,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Weights not loaded into RAM. Tap 'Load Weights to RAM' to eliminate 1st TTFT latency."
+                    android:text="Weights not loaded into RAM. Preloading eliminates first-token latency."
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
@@ -267,67 +306,78 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPreloadWeightsToRam"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="40dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:backgroundTint="@color/accent"
-                        android:text="Load Weights to RAM"
+                        android:backgroundTint="@color/primary"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Preload Weights"
                         android:textAllCaps="false"
-                        android:textSize="12sp" />
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="8dp"
+                        app:elevation="0dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnClearRamWeights"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:strokeColor="#FF5252"
-                        android:text="Clear from RAM"
+                        android:layout_height="40dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:strokeColor="@color/border_subtle"
+                        android:text="Free RAM"
                         android:textAllCaps="false"
-                        android:textColor="#FF5252"
-                        android:textSize="12sp" />
+                        android:textColor="@color/status_red"
+                        android:textSize="12sp"
+                        app:cornerRadius="8dp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 3: Weight File Diagnostics -->
+        <!-- Card 4: Weight File Diagnostics -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔍 Weight Diagnostics &amp; Format"
+                    android:text="Weight File Diagnostics"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvWeightFilePath"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:background="#121212"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:fontFamily="monospace"
                     android:padding="8dp"
                     android:text="Path: Not downloaded"
-                    android:textColor="#AAAAAA"
+                    android:textColor="@color/text_muted"
                     android:textSize="11sp" />
 
                 <TextView
@@ -335,10 +385,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:fontFamily="monospace"
                     android:text="Format: None | Mapped: 0 MB | Tensors: -"
-                    android:textColor="#80CBC4"
-                    android:textSize="11sp"
-                    android:fontFamily="monospace" />
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnVerifyWeights"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="10dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/border_subtle"
+                    app:cornerRadius="8dp"
+                    android:text="Verify Integrity"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -348,7 +413,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:paddingVertical="8dp">
 
             <TextView
                 android:layout_width="0dp"
@@ -356,16 +421,16 @@
                 android:layout_weight="1"
                 android:text="Model Catalog"
                 android:textColor="@color/text_primary"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCatalogCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12 Models Available"
-                android:textColor="@color/accent"
-                android:textSize="12sp" />
+                android:text="12 Models"
+                android:textColor="@color/text_muted"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <!-- Search Bar -->
@@ -373,14 +438,13 @@
             android:id="@+id/etCatalogSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/ic_launcher_background"
-            android:backgroundTint="#263238"
-            android:hint="Search by name, provider, or architecture (e.g. 14B, Qwen, Mistral)..."
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_terminal_rounded"
+            android:hint="Search models, architectures, or providers..."
             android:inputType="text"
-            android:padding="10dp"
+            android:padding="12dp"
             android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_secondary"
+            android:textColorHint="@color/text_muted"
             android:textSize="13sp" />
 
         <!-- Category Filter Horizontal Scroll -->
@@ -397,61 +461,71 @@
 
                 <Button
                     android:id="@+id/btnCatAll"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_marginEnd="6dp"
-                    android:backgroundTint="@color/primary"
+                    android:background="@drawable/bg_pill_badge"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="14dp"
                     android:text="All"
+                    android:textColor="@color/text_primary"
                     android:textSize="11sp" />
 
                 <Button
                     android:id="@+id/btnCatMassive"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_marginEnd="6dp"
-                    android:backgroundTint="#37474F"
+                    android:background="@drawable/bg_pill_badge"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
-                    android:text="🔥 Massive (7B-15B)"
+                    android:paddingHorizontal="14dp"
+                    android:text="Massive (7B+)"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
                 <Button
                     android:id="@+id/btnCatStandard"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_marginEnd="6dp"
-                    android:backgroundTint="#37474F"
+                    android:background="@drawable/bg_pill_badge"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="14dp"
                     android:text="Standard (1B-3B)"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
                 <Button
                     android:id="@+id/btnCatCompact"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_marginEnd="6dp"
-                    android:backgroundTint="#37474F"
+                    android:background="@drawable/bg_pill_badge"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="14dp"
                     android:text="Compact (&lt;1B)"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
                 <Button
                     android:id="@+id/btnCatStarter"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:backgroundTint="#37474F"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_pill_badge"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="14dp"
                     android:text="Starter (&lt;100M)"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
         </HorizontalScrollView>

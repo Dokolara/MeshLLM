@@ -10,53 +10,57 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <!-- Title -->
+        <!-- Title & Subtitle -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚡ Hardware Telemetry &amp; Sensors"
+            android:text="Silicon Telemetry"
             android:textColor="@color/text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textSize="22sp"
+            android:fontFamily="sans-serif-medium" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:layout_marginBottom="12dp"
-            android:text="Real-time sensor monitoring dynamically modulates layer allocation and prevents thermal throttling."
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="18dp"
+            android:text="Real-time SoC vitals dynamically modulate pipeline allocation and thermal headroom."
+            android:textColor="@color/text_muted"
+            android:textSize="12sp"
+            android:lineSpacingExtra="2dp" />
 
         <!-- Card 1: Battery Telemetry -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/card_dark"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔋 Battery &amp; Power Subsystem"
-                    android:textColor="@color/accent"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:text="POWER SUBSYSTEM"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
                     <LinearLayout
@@ -71,13 +75,14 @@
                             android:layout_height="wrap_content"
                             android:text="--%"
                             android:textColor="@color/text_primary"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textSize="26sp"
+                            android:fontFamily="sans-serif-medium" />
 
                         <TextView
                             android:id="@+id/tvChargingState"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="Discharging"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
@@ -94,14 +99,15 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="--°C"
-                            android:textColor="#FFB74D"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textColor="@color/warning"
+                            android:textSize="26sp"
+                            android:fontFamily="sans-serif-medium" />
 
                         <TextView
                             android:id="@+id/tvBatteryVoltage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="Voltage: -- mV"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
@@ -110,111 +116,110 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 2: Thermal Governor & Performance Protection (Req 10) -->
+        <!-- Card 2: Thermal Governor & Performance Protection -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🛡️ Thermal Governor &amp; Normal Device Protection"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Ensures app usage does not freeze or impact normal phone responsiveness."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp" />
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/tvThermalStatus"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Thermal: NONE (Normal)"
-                        android:textColor="@color/status_green"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:text="THERMAL GOVERNOR"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08" />
 
                     <TextView
                         android:id="@+id/tvHealthScore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#1B5E20"
-                        android:paddingHorizontal="8dp"
+                        android:background="@drawable/bg_pill_badge"
+                        android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
                         android:text="Health: 1.00x"
-                        android:textColor="#A5D6A7"
-                        android:textSize="12sp"
+                        android:textColor="@color/success"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Automatic rate-limiting prevents SoC throttling and UI stutter."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvThermalStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Thermal: NONE (Normal)"
+                    android:textColor="@color/success"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:id="@+id/tvGovernorDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:background="#121212"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:fontFamily="monospace"
-                    android:padding="8dp"
+                    android:padding="12dp"
                     android:text="Throttle Delay: 0ms • Priority: THREAD_PRIORITY_BACKGROUND • Dynamic Health Factor: 1.00"
-                    android:textColor="#80CBC4"
+                    android:textColor="@color/text_muted"
                     android:textSize="11sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 3: Memory & CPU Resource Breakdown (Req: Grey=System, Red=LLM, Green=App) -->
+        <!-- Card 3: Memory & CPU Resource Breakdown -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/surface_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/card_dark"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <!-- Header -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🧠 Resource Allocation Breakdown"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Color-coded tracking: Red = LLM, Grey = System &amp; Other apps"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp" />
+                    android:text="RESOURCE ALLOCATION"
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
 
                 <!-- RAM Title & Summary -->
                 <LinearLayout
@@ -231,24 +236,24 @@
                         android:text="Memory (RAM)"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:fontFamily="sans-serif-medium" />
 
                     <TextView
                         android:id="@+id/tvRamTotal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total: -- MB"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- Multi-segment RAM Progress Bar (Red=LLM, Grey=System & Other Apps, Empty=Free) -->
+                <!-- Multi-segment RAM Progress Bar -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:layout_marginTop="6dp"
-                    app:cardBackgroundColor="#1A1D24"
-                    app:cardCornerRadius="6dp"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="8dp"
+                    app:cardBackgroundColor="@color/surface_dark"
+                    app:cardCornerRadius="5dp"
                     app:cardElevation="0dp">
 
                     <LinearLayout
@@ -281,7 +286,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- RAM Legends (LLM in Red, System & Other Apps in Grey) -->
+                <!-- RAM Legends -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -295,8 +300,7 @@
                         android:layout_weight="1"
                         android:text="● LLM: -- MB"
                         android:textColor="@color/res_llm"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp" />
 
                     <TextView
                         android:id="@+id/tvRamSystem"
@@ -305,16 +309,15 @@
                         android:layout_weight="1"
                         android:text="● System &amp; Other Apps: -- MB"
                         android:textColor="@color/res_system"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="12dp"
-                    android:background="#2E3440" />
+                    android:layout_marginVertical="14dp"
+                    android:background="@color/border_subtle" />
 
                 <!-- CPU Title & Summary -->
                 <LinearLayout
@@ -330,24 +333,24 @@
                         android:text="Compute (CPU)"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:fontFamily="sans-serif-medium" />
 
                     <TextView
                         android:id="@+id/tvCpuCores"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="8 Cores • Load: --%"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
 
                 <!-- Multi-segment CPU Progress Bar -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:layout_marginTop="6dp"
-                    app:cardBackgroundColor="#1A1D24"
-                    app:cardCornerRadius="6dp"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="8dp"
+                    app:cardBackgroundColor="@color/surface_dark"
+                    app:cardCornerRadius="5dp"
                     app:cardElevation="0dp">
 
                     <LinearLayout
@@ -380,7 +383,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- CPU Legends (LLM in Red, System & Other Apps in Grey) -->
+                <!-- CPU Legends -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -394,8 +397,7 @@
                         android:layout_weight="1"
                         android:text="● LLM: --%"
                         android:textColor="@color/res_llm"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp" />
 
                     <TextView
                         android:id="@+id/tvCpuSystem"
@@ -404,27 +406,28 @@
                         android:layout_weight="1"
                         android:text="● System &amp; Other Apps: --%"
                         android:textColor="@color/res_system"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textSize="11sp" />
                 </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 4: Hardware Benchmark & Dev Mode (Req 5) -->
+        <!-- Card 4: Hardware Benchmark & Dev Mode -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -436,10 +439,11 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="⚙️ Compute &amp; Capacity Profile"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:text="CAPACITY PROFILE"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08" />
 
                     <TextView
                         android:id="@+id/tvBenchmarkStatus"
@@ -448,25 +452,27 @@
                         android:text="Checking Cache..."
                         android:textColor="@color/accent"
                         android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:fontFamily="sans-serif-medium" />
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvBenchmarkSummary"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_terminal_rounded"
+                    android:padding="12dp"
                     android:text="Compute: -- GFLOPS • Mem: -- MB/s • Capacity: -- pts"
-                    android:textColor="@color/text_primary"
-                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
                     android:fontFamily="monospace" />
 
                 <ProgressBar
                     android:id="@+id/pbBenchmark"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="6dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="10dp"
                     android:max="100"
                     android:progress="0"
                     android:progressTint="@color/accent"
@@ -476,28 +482,32 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRunBenchmark"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        android:backgroundTint="@color/primary"
+                        android:backgroundTint="@color/accent"
+                        app:cornerRadius="8dp"
                         android:text="Re-Run Benchmark"
                         android:textAllCaps="false"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-medium" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDevMode"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="42dp"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/border_subtle"
                         android:text="Dev Mode"
                         android:textAllCaps="false"
-                        android:textColor="@color/accent"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>

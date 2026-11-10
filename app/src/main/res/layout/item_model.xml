@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardModelItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
     app:cardBackgroundColor="@color/card_dark"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#3A3A3A"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/border_subtle"
     app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp">
 
         <!-- Title & Provider / Category row -->
         <LinearLayout
@@ -32,7 +31,7 @@
                 android:layout_weight="1"
                 android:text="TinyStories-15M"
                 android:textColor="@color/text_primary"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -40,11 +39,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:background="#1B5E20"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:text="TEST STARTER"
-                android:textColor="#A5D6A7"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="STARTER"
+                android:textColor="@color/accent"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:visibility="visible" />
@@ -53,11 +52,11 @@
                 android:id="@+id/tvModelCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#263238"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:text="Ultra-Small"
-                android:textColor="#80CBC4"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp" />
         </LinearLayout>
 
@@ -66,9 +65,9 @@
             android:id="@+id/tvModelProvider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:text="Microsoft / Eldan &amp; Li • roneneldan/TinyStories-15M"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_muted"
             android:textSize="11sp" />
 
         <!-- Specs Badges Row -->
@@ -82,25 +81,24 @@
                 android:id="@+id/tvModelParams"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#37474F"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:text="15M Params"
-                android:textColor="#ECEFF1"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textColor="@color/text_secondary"
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tvModelLayers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:background="#4527A0"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:text="6 Layers"
-                android:textColor="#D1C4E9"
-                android:textSize="11sp"
+                android:textColor="@color/primary"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -108,24 +106,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:background="#004D40"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:text="~18 MB (INT8)"
-                android:textColor="#80CBC4"
-                android:textSize="11sp" />
+                android:textColor="@color/accent_mint"
+                android:textSize="10sp" />
 
             <TextView
                 android:id="@+id/tvModelDim"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:background="#212121"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
+                android:background="@drawable/bg_pill_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
                 android:text="288 Dim"
-                android:textColor="#9E9E9E"
-                android:textSize="11sp" />
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
         </LinearLayout>
 
         <!-- Description -->
@@ -134,6 +132,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:lineSpacingMultiplier="1.2"
             android:text="Ultra-lightweight synthetic reasoning model. Executes with negligible RAM and thermal load."
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
@@ -144,10 +143,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="#3E2723"
+            android:background="@drawable/bg_terminal_rounded"
             android:padding="8dp"
-            android:text="⚠️ Massive Model: Single phone RAM will OOM crash! Must be split across 4 to 8 mesh phones."
-            android:textColor="#FFAB91"
+            android:text="Large Model: Must be partitioned across 4 to 8 mesh phones to fit RAM."
+            android:textColor="@color/status_orange"
             android:textSize="11sp"
             android:visibility="gone" />
 
@@ -155,7 +154,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -164,8 +163,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="✓ LOADED"
-                android:textColor="#00E676"
+                android:text="● ACTIVE IN MESH"
+                android:textColor="@color/accent"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
@@ -176,7 +175,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Not Downloaded"
-                android:textColor="#FF9800"
+                android:textColor="@color/text_muted"
                 android:textSize="11sp" />
 
             <Button
@@ -189,8 +188,11 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:text="Download"
-                android:textColor="#00E676"
-                android:textSize="11sp" />
+                android:textAllCaps="false"
+                android:textColor="@color/accent"
+                android:textSize="12sp"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/border_subtle" />
 
             <Button
                 android:id="@+id/btnSelectModel"
@@ -199,10 +201,13 @@
                 android:backgroundTint="@color/primary"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:paddingHorizontal="14dp"
-                android:text="Load into Mesh"
+                android:paddingHorizontal="12dp"
+                android:text="Load"
+                android:textAllCaps="false"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                app:cornerRadius="8dp"
+                app:elevation="0dp" />
         </LinearLayout>
 
     </LinearLayout>

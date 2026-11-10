@@ -12,22 +12,22 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header: Node Hub & P2P Status -->
+        <!-- Header: Node Hub & Status -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -39,20 +39,20 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🌐 Node Hub &amp; P2P Topology"
+                        android:text="Local Node Identity"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvCurrentRoleStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#1E293B"
+                        android:background="@drawable/bg_pill_badge"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="4dp"
-                        android:text="Role: Unassigned"
-                        android:textColor="#94A3B8"
+                        android:text="● Unassigned"
+                        android:textColor="@color/text_secondary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -63,8 +63,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:fontFamily="monospace"
-                    android:text="Local IP: Checking... | Node: -"
-                    android:textColor="@color/accent"
+                    android:text="IP: Checking... | Node: -"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
                 <!-- Role Action Buttons -->
@@ -72,7 +72,7 @@
                     android:id="@+id/layoutRoleButtons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="14dp"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -86,7 +86,7 @@
                             android:layout_height="44dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
-                            android:backgroundTint="@color/badge_master"
+                            android:backgroundTint="@color/primary"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:text="Start Master"
@@ -94,7 +94,8 @@
                             android:textColor="#FFFFFF"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="10dp"
+                            app:elevation="0dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnScanQrJoin"
@@ -102,15 +103,16 @@
                             android:layout_height="44dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:backgroundTint="@color/primary"
+                            android:backgroundTint="@color/accent"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="📷 Scan QR"
+                            android:text="Scan QR"
                             android:textAllCaps="false"
                             android:textColor="#FFFFFF"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="10dp"
+                            app:elevation="0dp" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -118,15 +120,15 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="8dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:text="Manual IP / Port Connect"
                         android:textAllCaps="false"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        app:cornerRadius="8dp"
-                        app:strokeColor="#334155" />
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/border_subtle" />
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -143,7 +145,8 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:visibility="gone"
-                    app:cornerRadius="8dp" />
+                    app:cornerRadius="10dp"
+                    app:elevation="0dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -154,23 +157,23 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔑 Cluster Session &amp; Pairing"
-                    android:textColor="#82B1FF"
+                    android:text="Cluster Pairing &amp; Session"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -187,8 +190,8 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="2dp"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
                         app:strokeColor="#FFFFFF"
                         app:strokeWidth="2dp">
 
@@ -206,8 +209,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="📷 Tap QR to enlarge or scan with slave node"
-                        android:textColor="#80D8FF"
+                        android:text="Tap QR to enlarge or scan with worker node"
+                        android:textColor="@color/text_secondary"
                         android:textSize="11sp" />
                 </LinearLayout>
 
@@ -225,7 +228,7 @@
                         android:layout_weight="1"
                         android:fontFamily="monospace"
                         android:text="MESH-XXXX-XXXX"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -238,10 +241,10 @@
                         android:insetBottom="0dp"
                         android:text="Copy"
                         android:textAllCaps="false"
-                        android:textColor="#82B1FF"
+                        android:textColor="@color/primary"
                         android:textSize="12sp"
-                        app:cornerRadius="6dp"
-                        app:strokeColor="#3F51B5" />
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/border_subtle" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -251,22 +254,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚡ Sequential Layer Pipeline"
+                    android:text="Sequential Layer Pipeline"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -275,12 +278,12 @@
                     android:id="@+id/tvPipelineDiagram"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:background="#0A0E14"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:fontFamily="monospace"
-                    android:padding="8dp"
+                    android:padding="10dp"
                     android:text="[Embedding] ➔ [Node 1 (Local): L0..N] ➔ [Output Head]"
-                    android:textColor="#00E676"
+                    android:textColor="@color/accent_mint"
                     android:textSize="11sp" />
 
                 <!-- Seniority / Failover status summary -->
@@ -288,10 +291,10 @@
                     android:id="@+id/tvSeniorityInfo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="8dp"
                     android:fontFamily="monospace"
                     android:text="Local Seniority: - | Heartbeat: OK"
-                    android:textColor="#94A3B8"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
                 <TextView
@@ -300,7 +303,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Leader Election: Successor promotes automatically on disconnect."
-                    android:textColor="#64748B"
+                    android:textColor="@color/text_muted"
                     android:textSize="10sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -312,23 +315,23 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚙️ Layer Balancing Mode"
-                    android:textColor="@color/accent"
+                    android:text="Layer Balancing Mode"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -370,7 +373,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Assign layer counts per node. Setting 0 bypasses that device."
-                        android:textColor="#80D8FF"
+                        android:textColor="@color/text_secondary"
                         android:textSize="11sp" />
 
                     <!-- Dynamic Container for Node Sliders -->
@@ -387,9 +390,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:background="#0A0E14"
+                        android:background="@drawable/bg_terminal_rounded"
                         android:fontFamily="monospace"
-                        android:padding="6dp"
+                        android:padding="8dp"
                         android:text="Assigned: 0 / 0 Layers"
                         android:textColor="@color/accent"
                         android:textSize="11sp"
@@ -399,7 +402,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
@@ -415,7 +418,8 @@
                             android:textAllCaps="false"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/border_subtle" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnApplyAllotment"
@@ -423,7 +427,7 @@
                             android:layout_height="40dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:backgroundTint="@color/status_green"
+                            android:backgroundTint="@color/accent"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:text="Apply"
@@ -431,7 +435,8 @@
                             android:textColor="#FFFFFF"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            app:cornerRadius="8dp" />
+                            app:cornerRadius="8dp"
+                            app:elevation="0dp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -443,7 +448,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingBottom="6dp">
+            android:paddingVertical="8dp">
 
             <TextView
                 android:layout_width="0dp"
@@ -459,7 +464,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0 Nodes"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/text_muted"
                 android:textSize="11sp" />
         </LinearLayout>
 

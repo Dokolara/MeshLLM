@@ -13,7 +13,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header: Console Title & Topology Pill -->
+        <!-- Minimal Header: Topology & Status Pill Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,58 +21,47 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/tvInferenceClusterInfo"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="⚡ Distributed Inference"
-                android:textColor="@color/text_primary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:text="TinyStories-15M • 6 Layers • 1 Node"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/tvInferenceStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#1E293B"
+                android:background="@drawable/bg_pill_badge"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="Idle"
+                android:text="● Ready"
                 android:textColor="@color/accent"
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Topology & Model Summary Pill -->
-        <TextView
-            android:id="@+id/tvInferenceClusterInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="10dp"
-            android:background="#161E2E"
-            android:fontFamily="monospace"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="6dp"
-            android:text="Model: TinyStories-15M • Pipeline: 6 Layers across 1 Node (Local)"
-            android:textColor="#94A3B8"
-            android:textSize="11sp" />
-
-        <!-- Card 1: Prompt Input Console -->
+        <!-- Card 1: Minimalist Prompt Input -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -84,7 +73,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Prompt Input"
+                        android:text="Prompt"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -93,26 +82,26 @@
                         android:id="@+id/btnUseSamplePrompt"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="32dp"
+                        android:layout_height="28dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:paddingHorizontal="8dp"
+                        android:paddingHorizontal="6dp"
                         android:text="Sample"
                         android:textAllCaps="false"
-                        android:textColor="@color/accent"
+                        android:textColor="@color/primary"
                         android:textSize="12sp" />
 
                     <Button
                         android:id="@+id/btnClearPrompt"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="32dp"
+                        android:layout_height="28dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:paddingHorizontal="8dp"
+                        android:paddingHorizontal="6dp"
                         android:text="Clear"
                         android:textAllCaps="false"
-                        android:textColor="#EF5350"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -121,45 +110,47 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="#0F131A"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:gravity="top|start"
-                    android:hint="Type prompt or question (e.g. 'Compare distributed pipeline parallelism vs single phone execution')..."
+                    android:hint="Type a prompt to distribute across the mesh..."
                     android:inputType="textMultiLine"
+                    android:lineSpacingMultiplier="1.2"
                     android:minLines="3"
                     android:maxLines="6"
                     android:padding="12dp"
-                    android:textColor="#F1F5F9"
-                    android:textColorHint="#64748B"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
                     android:textSize="13sp" />
 
                 <!-- Action Controls -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRunInference"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="44dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:backgroundTint="@color/status_green"
+                        android:backgroundTint="@color/accent"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="🚀 Run Distributed Inference"
+                        android:text="Run Distributed Inference"
                         android:textAllCaps="false"
                         android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:cornerRadius="10dp" />
+                        app:cornerRadius="10dp"
+                        app:elevation="0dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnStopInference"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
+                        android:layout_height="44dp"
                         android:backgroundTint="@color/status_red"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
@@ -168,74 +159,60 @@
                         android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:visibility="gone"
-                        app:cornerRadius="10dp" />
+                        app:cornerRadius="10dp"
+                        app:elevation="0dp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 2: Real-Time Streaming Output Console -->
+        <!-- Card 2: Minimalist Token Stream Console -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Real-Time Token Stream"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="● SYNAPSE-V"
-                        android:textColor="@color/accent"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:text="Response Stream"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvInferenceOutput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="#0A0E14"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:fontFamily="monospace"
-                    android:lineSpacingExtra="4dp"
+                    android:lineSpacingMultiplier="1.3"
                     android:minLines="5"
-                    android:padding="12dp"
-                    android:text="Waiting for prompt execution... Tap 'Run Distributed Inference' to stream tokens through the cluster pipeline."
-                    android:textColor="#E2E8F0"
+                    android:padding="14dp"
+                    android:text="Ready. Tap 'Run Distributed Inference' to stream tokens through the cluster pipeline."
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <!-- Compact Metrics Pill Row -->
+                <!-- Minimalist Performance Pill Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:background="#0F141E"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_terminal_rounded"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="8dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -248,25 +225,26 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="THROUGHPUT"
-                            android:textColor="#64748B"
-                            android:textSize="10sp"
+                            android:textColor="@color/text_muted"
+                            android:textSize="9sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvThroughput"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="-- tok/s"
                             android:textColor="@color/accent"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="24dp"
+                        android:layout_height="22dp"
                         android:layout_gravity="center_vertical"
-                        android:background="#273244" />
+                        android:background="@color/border_subtle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -279,25 +257,26 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="TOKENS"
-                            android:textColor="#64748B"
-                            android:textSize="10sp"
+                            android:textColor="@color/text_muted"
+                            android:textSize="9sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvTokenCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="0 tokens"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14sp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="24dp"
+                        android:layout_height="22dp"
                         android:layout_gravity="center_vertical"
-                        android:background="#273244" />
+                        android:background="@color/border_subtle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -309,45 +288,47 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="TTFT LATENCY"
-                            android:textColor="#64748B"
-                            android:textSize="10sp"
+                            android:text="LATENCY (TTFT)"
+                            android:textColor="@color/text_muted"
+                            android:textSize="9sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvTtftLatency"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="-- ms"
-                            android:textColor="#FFB74D"
-                            android:textSize="14sp"
+                            android:textColor="@color/status_orange"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 3: Expandable Pipeline Trace & Diagnostics HUD -->
+        <!-- Card 3: Collapsible Diagnostics Accordion -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#171D27"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeColor="#273244"
+            app:cardBackgroundColor="@color/card_dark"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border_subtle"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:id="@+id/layoutToggleTrace"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -355,49 +336,49 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📊 Pipeline Hop Diagnostics &amp; Weights"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
+                        android:text="Diagnostics &amp; Hop Latency Logs"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvTraceToggleIcon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="▼"
-                        android:textColor="#94A3B8"
-                        android:textSize="12sp" />
+                        android:text="▶"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/layoutTraceContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="vertical">
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/tvWeightSourceStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="#1B5E20"
+                        android:background="@drawable/bg_terminal_rounded"
                         android:fontFamily="monospace"
-                        android:padding="6dp"
-                        android:text="Weights: Neural Transformer Architecture Active"
-                        android:textColor="#A5D6A7"
+                        android:padding="8dp"
+                        android:text="Weights: Neural Transformer Active"
+                        android:textColor="@color/accent"
                         android:textSize="11sp" />
 
-                    <!-- Pipeline Hop Trace -->
                     <TextView
                         android:id="@+id/tvPipelineTrace"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:background="#0A0E14"
+                        android:background="@drawable/bg_terminal_rounded"
                         android:fontFamily="monospace"
                         android:padding="8dp"
-                        android:text="[Pipeline Trace]\nReady. Pipeline activation tensors stream sequentially between nodes."
-                        android:textColor="#80CBC4"
+                        android:text="Ready. Activation tensors stream sequentially between nodes."
+                        android:textColor="@color/text_secondary"
                         android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>

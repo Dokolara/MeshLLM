@@ -106,19 +106,19 @@ class MainActivity : AppCompatActivity() {
             viewModel.currentRole.collect { role ->
                 when (role) {
                     NodeRole.MASTER -> {
-                        binding.tvHeaderRoleBadge.text = "MASTER"
-                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#7C4DFF"))
-                        binding.tvHeaderRoleBadge.setTextColor(Color.WHITE)
+                        binding.tvHeaderRoleBadge.text = "● MASTER"
+                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#1E1B4B"))
+                        binding.tvHeaderRoleBadge.setTextColor(Color.parseColor("#A78BFA"))
                     }
                     NodeRole.SLAVE -> {
-                        binding.tvHeaderRoleBadge.text = "SLAVE"
-                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#00B0FF"))
-                        binding.tvHeaderRoleBadge.setTextColor(Color.WHITE)
+                        binding.tvHeaderRoleBadge.text = "● WORKER"
+                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#082F49"))
+                        binding.tvHeaderRoleBadge.setTextColor(Color.parseColor("#38BDF8"))
                     }
                     else -> {
-                        binding.tvHeaderRoleBadge.text = "IDLE"
-                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#263238"))
-                        binding.tvHeaderRoleBadge.setTextColor(Color.parseColor("#AAAAAA"))
+                        binding.tvHeaderRoleBadge.text = "● IDLE"
+                        binding.tvHeaderRoleBadge.setBackgroundColor(Color.parseColor("#1E293B"))
+                        binding.tvHeaderRoleBadge.setTextColor(Color.parseColor("#94A3B8"))
                     }
                 }
             }

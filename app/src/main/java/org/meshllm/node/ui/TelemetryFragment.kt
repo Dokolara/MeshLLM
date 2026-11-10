@@ -64,9 +64,9 @@ class TelemetryFragment : Fragment() {
 
                         binding.tvBatteryTemp.text = "${metrics.batteryTemperatureC}°C"
                         when {
-                            metrics.batteryTemperatureC > 42.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FF5252"))
-                            metrics.batteryTemperatureC > 38.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#FFA726"))
-                            else -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#66BB6A"))
+                            metrics.batteryTemperatureC > 42.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#F43F5E"))
+                            metrics.batteryTemperatureC > 38.0 -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#F59E0B"))
+                            else -> binding.tvBatteryTemp.setTextColor(Color.parseColor("#10B981"))
                         }
 
                         binding.tvBatteryVoltage.text = "Voltage: ${metrics.batteryVoltageMv} mV"
@@ -122,12 +122,12 @@ class TelemetryFragment : Fragment() {
                     viewModel.benchmarkProfile.collect { profile ->
                         if (profile != null) {
                             binding.tvBenchmarkStatus.text = "Profile Loaded from Cache (Tests Skipped)"
-                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#00E676"))
+                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#10B981"))
                             binding.tvBenchmarkSummary.text = "Compute: ${profile.computeScoreGflops} GFLOPS • Mem: ${profile.memoryBandwidthMbPerSec} MB/s • Cores: ${profile.cpuCoreCount} • Capacity: ${profile.compositeCapacityScore} pts"
                             binding.btnRunBenchmark.text = "Re-Run Benchmark"
                         } else {
                             binding.tvBenchmarkStatus.text = "Not Benchmarked (First Launch)"
-                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#FFAB00"))
+                            binding.tvBenchmarkStatus.setTextColor(Color.parseColor("#F59E0B"))
                             binding.tvBenchmarkSummary.text = "Run benchmark to profile device compute and capacity"
                             binding.btnRunBenchmark.text = "Run Benchmark"
                         }

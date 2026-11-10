@@ -6,16 +6,15 @@
     android:background="@color/bg_dark"
     android:orientation="vertical">
 
-    <!-- Top App Bar -->
+    <!-- Minimalist Top App Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface_dark"
-        android:elevation="4dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="14dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -26,6 +25,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:letterSpacing="-0.02"
                 android:text="MeshLLM"
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
@@ -35,8 +35,9 @@
                 android:id="@+id/tvHeaderSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Distributed Mobile Edge Inference"
-                android:textColor="@color/accent"
+                android:layout_marginTop="2dp"
+                android:text="Distributed Pipeline Inference"
+                android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -44,14 +45,19 @@
             android:id="@+id/tvHeaderRoleBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#263238"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:text="IDLE"
-            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_pill_badge"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="5dp"
+            android:text="● IDLE"
+            android:textColor="@color/text_secondary"
             android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border_subtle" />
 
     <!-- ViewPager2 for the 4 dedicated topic screens -->
     <androidx.viewpager2.widget.ViewPager2
@@ -60,14 +66,21 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Bottom Navigation View with 4 tabs -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border_subtle" />
+
+    <!-- Minimalist Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface_dark"
-        app:elevation="8dp"
+        app:elevation="0dp"
+        app:itemIconSize="22dp"
         app:itemIconTint="@color/bottom_nav_colors"
+        app:itemRippleColor="#15FFFFFF"
         app:itemTextColor="@color/bottom_nav_colors"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
