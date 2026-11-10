@@ -1,0 +1,25 @@
+[package]
+name = "meshllm_rust_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+candle-core = "0.8"
+candle-transformers = "0.8"
+candle-nn = "0.8"
+byteorder = "1.5"
+tokio = { version = "1.38", features = ["full"] }
+bytes = "1.6"
+memmap2 = "0.9"
+
+[[bin]]
+name = "quant_bench"
+path = "src/quant_bench.rs"
+
+[[bin]]
+name = "net_bench"
+path = "src/net_bench.rs"
+
+[[bin]]
+name = "candle_slice"
+path = "src/candle_slice.rs"

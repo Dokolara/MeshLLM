@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_cluster"
+        android:icon="@drawable/ic_cluster"
+        android:title="Cluster" />
+
+    <item
+        android:id="@+id/nav_models"
+        android:icon="@drawable/ic_models"
+        android:title="Models" />
+
+    <item
+        android:id="@+id/nav_telemetry"
+        android:icon="@drawable/ic_telemetry"
+        android:title="Telemetry" />
+
+    <item
+        android:id="@+id/nav_inference"
+        android:icon="@drawable/ic_inference"
+        android:title="Inference" />
+</menu>

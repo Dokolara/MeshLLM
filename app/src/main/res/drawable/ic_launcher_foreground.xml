@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Mesh Node Network Icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28 A6,6 0 1,1 54,40 A6,6 0 1,1 54,28 M30,70 A6,6 0 1,1 30,82 A6,6 0 1,1 30,70 M78,70 A6,6 0 1,1 78,82 A6,6 0 1,1 78,70"/>
+    <path
+        android:strokeColor="#00E676"
+        android:strokeWidth="3"
+        android:pathData="M54,34 L30,76 M54,34 L78,76 M30,76 L78,76"/>
+</vector>

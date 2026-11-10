@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">MeshLLM</string>
+    <string name="tagline">Decentralized P2P LLM Inference Network</string>
+    
+    <!-- Role selection -->
+    <string name="role_master_title">Start New Network (Master)</string>
+    <string name="role_master_desc">Orchestrate inference pipeline and host initial transformer blocks</string>
+    <string name="role_slave_title">Join Existing Network (Slave)</string>
+    <string name="role_slave_desc">Connect to an active master node and execute assigned layers</string>
+    
+    <!-- Dev mode -->
+    <string name="dev_mode_title">Dev Mode / Benchmark Profile</string>
+    <string name="dev_mode_skip_bench">Skip Benchmark (Use Mock/Cached Profile)</string>
+    
+    <!-- Telemetry -->
+    <string name="sensors_header">Device Telemetry</string>
+    <string name="cluster_nodes_header">Cluster Topology</string>
+    <string name="layer_distribution_header">Transformer Layer Distribution</string>
+    <string name="inference_console_header">Distributed Pipeline Inference</string>
+    
+    <string name="btn_run_benchmark">Run Compute Benchmark</string>
+    <string name="btn_start_network">Initialize Cluster</string>
+    <string name="btn_join_network">Join Cluster</string>
+    <string name="btn_disconnect">Disconnect / Leave</string>
+    <string name="btn_send_prompt">Generate (Run Pipeline)</string>
+</resources>

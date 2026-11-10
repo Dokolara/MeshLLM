@@ -1,0 +1,7 @@
+build/
+.gradle/
+app/build/
+app/.cxx/
+*.bin
+*.gguf
+rust_prototype/target/
