@@ -1,0 +1,129 @@
+version: '3.8'
+
+networks:
+  meshllm-network:
+    driver: bridge
+
+services:
+  mesh-master:
+    image: meshllm-node:latest
+    container_name: mesh-master
+    networks:
+      - meshllm-network
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ROLE=master
+      - NODE_ID=mesh-master
+      - NODE_PORT=8080
+      - TOTAL_LAYERS=30
+      - SIMULATED_SOC=Snapdragon 8 Gen 3 (Adreno 750)
+      - COMPUTE_DELAY_MS=1.8
+      - NET_LATENCY_MS=1.5
+      - SIMULATED_TEMP_C=32.5
+      - ENABLE_QUANT=true
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+  mesh-worker-1:
+    image: meshllm-node:latest
+    container_name: mesh-worker-1
+    networks:
+      - meshllm-network
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_ROLE=worker
+      - NODE_ID=mesh-worker-1
+      - NODE_PORT=8080
+      - MASTER_URL=http://mesh-master:8080
+      - SIMULATED_SOC=Google Tensor G3 (TPU/Cortex-X3)
+      - COMPUTE_DELAY_MS=2.2
+      - NET_LATENCY_MS=2.0
+      - SIMULATED_TEMP_C=34.0
+      - ENABLE_QUANT=true
+    depends_on:
+      - mesh-master
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+  mesh-worker-2:
+    image: meshllm-node:latest
+    container_name: mesh-worker-2
+    networks:
+      - meshllm-network
+    ports:
+      - "8082:8080"
+    environment:
+      - NODE_ROLE=worker
+      - NODE_ID=mesh-worker-2
+      - NODE_PORT=8080
+      - MASTER_URL=http://mesh-master:8080
+      - SIMULATED_SOC=MediaTek Dimensity 9300 (Immortalis-G720)
+      - COMPUTE_DELAY_MS=1.9
+      - NET_LATENCY_MS=2.0
+      - SIMULATED_TEMP_C=33.5
+      - ENABLE_QUANT=true
+    depends_on:
+      - mesh-master
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+  mesh-worker-3:
+    image: meshllm-node:latest
+    container_name: mesh-worker-3
+    networks:
+      - meshllm-network
+    ports:
+      - "8083:8080"
+    environment:
+      - NODE_ROLE=worker
+      - NODE_ID=mesh-worker-3
+      - NODE_PORT=8080
+      - MASTER_URL=http://mesh-master:8080
+      - SIMULATED_SOC=Snapdragon 8 Gen 2 (Adreno 740)
+      - COMPUTE_DELAY_MS=2.4
+      - NET_LATENCY_MS=2.5
+      - SIMULATED_TEMP_C=35.0
+      - ENABLE_QUANT=true
+    depends_on:
+      - mesh-master
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+  mesh-worker-4:
+    image: meshllm-node:latest
+    container_name: mesh-worker-4
+    networks:
+      - meshllm-network
+    ports:
+      - "8084:8080"
+    environment:
+      - NODE_ROLE=worker
+      - NODE_ID=mesh-worker-4
+      - NODE_PORT=8080
+      - MASTER_URL=http://mesh-master:8080
+      - SIMULATED_SOC=Samsung Exynos 2400 (Xclipse 940)
+      - COMPUTE_DELAY_MS=2.1
+      - NET_LATENCY_MS=2.0
+      - SIMULATED_TEMP_C=33.0
+      - ENABLE_QUANT=true
+    depends_on:
+      - mesh-master
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
