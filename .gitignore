@@ -6,3 +6,4 @@ app/.cxx/
 *.gguf
 rust_prototype/target/
 mesh_core/target/
+__pycache__/
