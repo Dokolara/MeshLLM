@@ -4,7 +4,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.meshllm.node.model.ModelCatalog
 import org.meshllm.node.model.ModelSpec
-import org.meshllm.node.telemetry.HuggingFaceClient
 
 class HuggingFaceModelCatalogTest {
 
@@ -30,7 +29,8 @@ class HuggingFaceModelCatalogTest {
             fileSizeBytes = 140_000_000_000L,
             fileFormat = "GGUF",
             quantization = "FP16",
-            isSuitableForMobile = false
+            isSuitableForMobile = false,
+            isOnlineHfModel = true
         )
 
         ModelCatalog.addDynamicModels(listOf(nonSuitableModel))
@@ -51,6 +51,37 @@ class HuggingFaceModelCatalogTest {
         )
         assertEquals("When filter is removed, all Hugging Face models must appear", 1, unfiltered.size)
         assertEquals("huge-70b-raw-fp16", unfiltered.first().id)
+        assertTrue(unfiltered.first().isOnlineHfModel)
+    }
+
+    @Test
+    fun testMultiTokenFlexibleSearch() {
+        // Test searching for "llama 3.2" matches "Llama-3.2-1B-Instruct" despite punctuation and spaces
+        val llamaResults = ModelCatalog.filter(
+            category = ModelCatalog.CATEGORY_ALL,
+            query = "llama 3.2",
+            suitableOnly = true
+        )
+        assertTrue("Query 'llama 3.2' should match Llama 3.2 models", llamaResults.isNotEmpty())
+        assertTrue(llamaResults.any { it.name.contains("Llama-3.2", ignoreCase = true) })
+
+        // Test searching for "mistral 7b" matches "Mistral-7B-Instruct-v0.3"
+        val mistralResults = ModelCatalog.filter(
+            category = ModelCatalog.CATEGORY_ALL,
+            query = "mistral 7b",
+            suitableOnly = true
+        )
+        assertTrue("Query 'mistral 7b' should match Mistral 7B", mistralResults.isNotEmpty())
+        assertTrue(mistralResults.any { it.name.contains("Mistral-7B", ignoreCase = true) })
+
+        // Test searching for "qwen 2.5" matches "Qwen2.5-7B-Instruct"
+        val qwenResults = ModelCatalog.filter(
+            category = ModelCatalog.CATEGORY_ALL,
+            query = "qwen 2.5",
+            suitableOnly = true
+        )
+        assertTrue("Query 'qwen 2.5' should match Qwen 2.5 models", qwenResults.isNotEmpty())
+        assertTrue(qwenResults.any { it.name.contains("Qwen2.5", ignoreCase = true) })
     }
 
     @Test
@@ -79,11 +110,13 @@ class HuggingFaceModelCatalogTest {
             fileSizeBytes = 4920000000L,
             fileFormat = "GGUF",
             quantization = "Q4_K_M",
-            isSuitableForMobile = true
+            isSuitableForMobile = true,
+            isOnlineHfModel = true
         )
 
         assertEquals(expectedUrl, spec.downloadUrl)
         assertTrue(spec.isSuitableForMobile)
+        assertTrue(spec.isOnlineHfModel)
         assertEquals("Q4_K_M", spec.quantization)
     }
 

@@ -29,6 +29,7 @@ data class ModelSpec(
     val singleDeviceOomWarning: Boolean = false,
     val quantization: String = "GGUF",
     val isSuitableForMobile: Boolean = true,
+    val isOnlineHfModel: Boolean = false,
     val downloadsCount: Long = 0L,
     val likesCount: Long = 0L
 ) {

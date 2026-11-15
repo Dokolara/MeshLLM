@@ -454,19 +454,43 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
-        <!-- Search Bar -->
-        <EditText
-            android:id="@+id/etCatalogSearch"
+        <!-- Search Bar with Action Button -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_terminal_rounded"
-            android:hint="Search Hugging Face models (e.g. qwen, llama, smollm)..."
-            android:inputType="text"
-            android:padding="12dp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:textSize="13sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etCatalogSearch"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_terminal_rounded"
+                android:hint="Search Hugging Face (e.g. qwen, llama, mistral)..."
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitSearch"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/primary"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="8dp"
+                android:text="Search"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
 
         <!-- Suitability & Quantization Filter Controls -->
         <LinearLayout
@@ -589,6 +613,21 @@
                     android:textSize="11sp" />
             </LinearLayout>
         </HorizontalScrollView>
+
+        <!-- Empty State Message -->
+        <TextView
+            android:id="@+id/tvEmptySearchState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="16dp"
+            android:background="@drawable/bg_card_rounded"
+            android:gravity="center"
+            android:padding="20dp"
+            android:text="No models found matching criteria.\nTap 'Search' or disable 'Suitable Only' to search all Hugging Face models."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:lineSpacingExtra="3dp"
+            android:visibility="gone" />
 
         <!-- Models RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView

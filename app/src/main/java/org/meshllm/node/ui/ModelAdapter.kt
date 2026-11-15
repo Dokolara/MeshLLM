@@ -20,27 +20,9 @@ class ModelAdapter(
 ) : RecyclerView.Adapter<ModelAdapter.ModelViewHolder>() {
 
     fun updateData(newModels: List<ModelSpec>, currentActiveModelId: String) {
-        val oldModels = this.models
-        val oldActiveId = this.activeModelId
-        this.models = newModels
+        this.models = ArrayList(newModels)
         this.activeModelId = currentActiveModelId
-
-        val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-            override fun getOldListSize(): Int = oldModels.size
-            override fun getNewListSize(): Int = newModels.size
-            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                oldModels[oldItemPosition].id == newModels[newItemPosition].id
-            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                val old = oldModels[oldItemPosition]
-                val new = newModels[newItemPosition]
-                val wasActive = old.id.equals(oldActiveId, ignoreCase = true)
-                val isActive = new.id.equals(currentActiveModelId, ignoreCase = true)
-                return old == new && wasActive == isActive &&
-                        isModelDownloaded(old) == isModelDownloaded(new) &&
-                        isModelAvailableOnMaster(old) == isModelAvailableOnMaster(new)
-            }
-        })
-        diffResult.dispatchUpdatesTo(this)
+        notifyDataSetChanged()
     }
 
     fun notifyModelStatusChanged(modelId: String) {
@@ -69,7 +51,17 @@ class ModelAdapter(
             binding.tvModelProvider.text = "${model.provider}$repoText"
             binding.tvModelCategory.text = model.category
 
-            binding.tvStarterBadge.visibility = if (model.isStarterTestModel) View.VISIBLE else View.GONE
+            if (model.isOnlineHfModel) {
+                binding.tvStarterBadge.visibility = View.VISIBLE
+                binding.tvStarterBadge.text = "HF HUB"
+                binding.tvStarterBadge.setTextColor(Color.parseColor("#818CF8"))
+            } else if (model.isStarterTestModel) {
+                binding.tvStarterBadge.visibility = View.VISIBLE
+                binding.tvStarterBadge.text = "STARTER"
+                binding.tvStarterBadge.setTextColor(Color.parseColor("#10B981"))
+            } else {
+                binding.tvStarterBadge.visibility = View.GONE
+            }
             binding.tvModelParams.text = "${model.paramCountStr} Params"
             binding.tvModelLayers.text = "${model.totalLayers} Layers"
             binding.tvQuantBadge.text = model.quantization

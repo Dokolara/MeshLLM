@@ -103,7 +103,11 @@ class ModelsFragment : Fragment() {
     private fun setupSuitabilityAndQuantFilters() {
         binding.btnRefreshHf.setOnClickListener {
             Toast.makeText(requireContext(), "Syncing models from Hugging Face Hub...", Toast.LENGTH_SHORT).show()
-            viewModel.fetchHuggingFaceCatalog(forceRefresh = true)
+            viewModel.fetchHuggingFaceCatalog(forceRefresh = true) { count ->
+                activity?.runOnUiThread {
+                    Toast.makeText(requireContext(), "Synced $count models from Hugging Face", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         binding.btnToggleSuitable.setOnClickListener {
@@ -133,10 +137,35 @@ class ModelsFragment : Fragment() {
     }
 
     private fun setupSearch() {
+        binding.btnSubmitSearch.setOnClickListener {
+            val query = binding.etCatalogSearch.text.toString().trim()
+            if (query.isNotEmpty()) {
+                val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.hideSoftInputFromWindow(binding.etCatalogSearch.windowToken, 0)
+                Toast.makeText(requireContext(), "Searching Hugging Face for '$query'...", Toast.LENGTH_SHORT).show()
+                viewModel.searchHuggingFace(query) { count ->
+                    activity?.runOnUiThread {
+                        if (count > 0) {
+                            Toast.makeText(requireContext(), "Found $count models on Hugging Face", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), "No matching models on Hugging Face", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        binding.etCatalogSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH || actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                binding.btnSubmitSearch.performClick()
+                true
+            } else false
+        }
+
         binding.etCatalogSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                viewModel.setCatalogFilter(viewModel.catalogCategory.value, s?.toString()?.trim() ?: "")
+                viewModel.setCatalogFilter(category = viewModel.catalogCategory.value, query = s?.toString()?.trim() ?: "")
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -239,6 +268,7 @@ class ModelsFragment : Fragment() {
                         if (!viewModel.isHfSearching.value) {
                             binding.tvCatalogCount.text = "${models.size} Models"
                         }
+                        binding.tvEmptySearchState.visibility = if (models.isEmpty()) View.VISIBLE else View.GONE
                         modelAdapter.updateData(models, viewModel.activeModel.value.id)
                     }
                 }

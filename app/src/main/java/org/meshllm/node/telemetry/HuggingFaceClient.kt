@@ -25,24 +25,29 @@ class HuggingFaceClient {
         private const val TAG = "HuggingFaceClient"
         private const val HF_API_BASE = "https://huggingface.co/api"
 
-        // Preferred standard quantizations for mobile inference
         val SUITABLE_QUANTS = setOf(
-            "Q2_K", "Q3_K_M", "Q3_K_S", "Q4_K_M", "Q4_K_S", "Q4_0", "Q4_1",
-            "Q5_K_M", "Q5_K_S", "Q5_0", "Q6_K", "Q8_0", "IQ2_M", "IQ3_M", "IQ4_XS"
+            "Q2_K", "Q2_K_S", "Q2_K_L", "Q2_0",
+            "Q3_K_M", "Q3_K_S", "Q3_K_L", "Q3_K_XL", "Q3_0",
+            "Q4_K_M", "Q4_K_S", "Q4_K_L", "Q4_0", "Q4_1",
+            "Q5_K_M", "Q5_K_S", "Q5_K_L", "Q5_0", "Q5_1",
+            "Q6_K", "Q8_0",
+            "IQ2_M", "IQ2_S", "IQ2_XS", "IQ2_XXS",
+            "IQ3_M", "IQ3_S", "IQ3_XS", "IQ3_XXS",
+            "IQ4_XS", "IQ4_NL"
         )
     }
 
     private val gson = Gson()
     private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(12, TimeUnit.SECONDS)
-        .readTimeout(18, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
         .followRedirects(true)
         .build()
 
     /**
      * Dynamically fetch popular, top-downloaded and trending GGUF text generation models from Hugging Face.
      */
-    suspend fun fetchPopularModels(limit: Int = 30): List<ModelSpec> = withContext(Dispatchers.IO) {
+    suspend fun fetchPopularModels(limit: Int = 40): List<ModelSpec> = withContext(Dispatchers.IO) {
         val collected = mutableListOf<ModelSpec>()
         val seenIds = mutableSetOf<String>()
 
@@ -54,29 +59,33 @@ class HuggingFaceClient {
             }
         }
 
+        // 1. Top downloaded GGUF text generation models
         try {
-            // 1. Query top downloaded text-generation GGUFs across Hugging Face
             val topUrl = "$HF_API_BASE/models?pipeline_tag=text-generation&filter=gguf&sort=downloads&direction=-1&limit=$limit&full=true"
             val topSpecs = executeModelListQuery(topUrl)
             addSpecs(topSpecs)
-
-            // 2. Query curated top mobile models (Qwen, Llama 3.2, SmolLM2) to ensure small-to-standard variety
-            val queries = listOf(
-                "qwen2.5%20gguf",
-                "llama-3.2%20gguf",
-                "smollm2%20gguf"
-            )
-            for (q in queries) {
-                val qUrl = "$HF_API_BASE/models?search=$q&pipeline_tag=text-generation&filter=gguf&sort=downloads&direction=-1&limit=6&full=true"
-                val qSpecs = executeModelListQuery(qUrl)
-                addSpecs(qSpecs)
-            }
-
-            Log.i(TAG, "Successfully fetched ${collected.size} dynamic models from Hugging Face Hub")
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching models from Hugging Face: ${e.message}", e)
+            Log.w(TAG, "Failed top models query: ${e.message}")
         }
 
+        // 2. Curated popular mobile architectures (Qwen, Llama, SmolLM, Mistral, Gemma)
+        val queries = listOf(
+            "qwen2.5%20gguf",
+            "llama-3.2%20gguf",
+            "mistral%20gguf",
+            "smollm2%20gguf"
+        )
+        for (q in queries) {
+            try {
+                val qUrl = "$HF_API_BASE/models?search=$q&pipeline_tag=text-generation&sort=downloads&direction=-1&limit=6&full=true"
+                val qSpecs = executeModelListQuery(qUrl)
+                addSpecs(qSpecs)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed query for '$q': ${e.message}")
+            }
+        }
+
+        Log.i(TAG, "Successfully fetched ${collected.size} dynamic models from Hugging Face Hub")
         return@withContext collected
     }
 
@@ -84,15 +93,44 @@ class HuggingFaceClient {
      * Search Hugging Face dynamically for GGUF models matching [query].
      * Returns a list of [ModelSpec]s with all available quantizations.
      */
-    suspend fun searchModels(query: String, limit: Int = 25): List<ModelSpec> = withContext(Dispatchers.IO) {
+    suspend fun searchModels(query: String, limit: Int = 30): List<ModelSpec> = withContext(Dispatchers.IO) {
         val cleanQuery = query.trim()
         if (cleanQuery.isEmpty()) return@withContext emptyList()
 
-        try {
-            val encodedQuery = URLEncoder.encode(cleanQuery, "UTF-8")
-            val url = "$HF_API_BASE/models?search=$encodedQuery&filter=gguf&sort=downloads&direction=-1&limit=$limit&full=true"
+        val results = mutableListOf<ModelSpec>()
+        val seenIds = mutableSetOf<String>()
 
-            val results = executeModelListQuery(url)
+        fun addSpecs(specs: List<ModelSpec>) {
+            for (s in specs) {
+                if (seenIds.add(s.id)) {
+                    results.add(s)
+                }
+            }
+        }
+
+        try {
+            // Direct repository check if query matches author/repo (e.g. bartowski/Llama-3.2-1B-Instruct-GGUF)
+            if (cleanQuery.contains('/')) {
+                val repoSpecs = fetchRepoQuantizations(cleanQuery)
+                if (repoSpecs.isNotEmpty()) {
+                    addSpecs(repoSpecs)
+                }
+            }
+
+            // Primary search: search query with filter=gguf
+            val encodedQuery = URLEncoder.encode(cleanQuery, "UTF-8")
+            val primaryUrl = "$HF_API_BASE/models?search=$encodedQuery&filter=gguf&sort=downloads&direction=-1&limit=$limit&full=true"
+            val primarySpecs = executeModelListQuery(primaryUrl)
+            addSpecs(primarySpecs)
+
+            // Fallback: if few results, search with "$cleanQuery gguf" without tag filter
+            if (results.size < 5) {
+                val fallbackQuery = URLEncoder.encode("$cleanQuery gguf", "UTF-8")
+                val fallbackUrl = "$HF_API_BASE/models?search=$fallbackQuery&sort=downloads&direction=-1&limit=$limit&full=true"
+                val fallbackSpecs = executeModelListQuery(fallbackUrl)
+                addSpecs(fallbackSpecs)
+            }
+
             Log.i(TAG, "Found ${results.size} model quantizations on Hugging Face for '$cleanQuery'")
             return@withContext results
         } catch (e: Exception) {
@@ -109,7 +147,7 @@ class HuggingFaceClient {
             val url = "$HF_API_BASE/models/$repoId/tree/main"
             val request = Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", "MeshLLM-Android-Node/1.0")
+                .addHeader("User-Agent", "Mozilla/5.0 (Android; Mobile) MeshLLM/1.0")
                 .build()
 
             httpClient.newCall(request).execute().use { response ->
@@ -141,7 +179,7 @@ class HuggingFaceClient {
     private fun executeModelListQuery(url: String): List<ModelSpec> {
         val request = Request.Builder()
             .url(url)
-            .addHeader("User-Agent", "MeshLLM-Android-Node/1.0")
+            .addHeader("User-Agent", "Mozilla/5.0 (Android; Mobile) MeshLLM/1.0")
             .build()
 
         httpClient.newCall(request).execute().use { response ->
@@ -182,7 +220,6 @@ class HuggingFaceClient {
                 }
             }
         } else {
-            // Sibling list not expanded; provide default Q4_K_M GGUF endpoint
             val modelName = repoId.substringAfter('/').removeSuffix("-GGUF").removeSuffix("-gguf")
             val defaultFileName = "${modelName.lowercase()}-q4_k_m.gguf"
             val spec = createModelSpec(repoId, defaultFileName, 0L, downloads, likes)
@@ -201,18 +238,18 @@ class HuggingFaceClient {
     ): ModelSpec {
         val author = repoId.substringBefore('/')
         val modelBaseName = repoId.substringAfter('/').removeSuffix("-GGUF").removeSuffix("-gguf")
-        val quant = extractQuantization(fileName)
+        val cleanFileName = fileName.substringAfterLast('/')
+        val quant = extractQuantization(cleanFileName)
 
-        val id = "${repoId.replace('/', '_')}__$fileName"
+        val id = "${repoId.replace('/', '_')}__$cleanFileName"
         val displayName = "$modelBaseName [$quant]"
 
-        // Infer parameter count (e.g. 135M, 0.5B, 1B, 3B, 7B, 8B, 14B, 70B)
-        val paramCount = inferParamCount(repoId + " " + fileName)
+        // Infer parameter count
+        val paramCount = inferParamCount(repoId + " " + cleanFileName)
         val layers = inferLayers(paramCount)
         val hiddenDim = inferHiddenDim(paramCount)
         val category = inferCategory(paramCount)
 
-        // Dynamic Hugging Face resolve URL
         val downloadUrl = "https://huggingface.co/$repoId/resolve/main/$fileName"
 
         val finalSizeBytes = if (sizeBytes > 0L) sizeBytes else estimateSizeBytes(paramCount, quant)
@@ -233,15 +270,16 @@ class HuggingFaceClient {
         }
 
         // Assess suitability for distributed mobile inference
-        val isMmproj = fileName.lowercase().contains("mmproj")
-        val isSplit = fileName.contains("-of-") || fileName.contains(".part")
-        val isGguf = fileName.endsWith(".gguf", ignoreCase = true)
-        val isRawFloat = quant.contains("FP16") || quant.contains("F16") || quant.contains("BF16") || quant.contains("FP32")
-        val isReasonableParam = paramCount in 0.01..16.0
-        val isSuitableQuant = SUITABLE_QUANTS.any { quant.contains(it, ignoreCase = true) } ||
-                quant.startsWith("Q", ignoreCase = true) || quant.startsWith("IQ", ignoreCase = true)
+        val lowerFile = cleanFileName.lowercase()
+        val isMmproj = lowerFile.contains("mmproj")
+        val isSplit = lowerFile.contains("-of-") || lowerFile.contains(".part")
+        val isGguf = lowerFile.endsWith(".gguf")
+        val isRawFloat = quant == "FP16" || quant == "BF16" || quant == "FP32"
+        val isReasonableParam = paramCount in 0.01..20.0
+        val isStandardQuant = quant.startsWith("Q") || quant.startsWith("IQ") ||
+                SUITABLE_QUANTS.any { quant.contains(it, ignoreCase = true) }
 
-        val isSuitable = isGguf && !isMmproj && !isSplit && !isRawFloat && isReasonableParam && isSuitableQuant
+        val isSuitable = isGguf && !isMmproj && !isSplit && !isRawFloat && isReasonableParam && isStandardQuant
 
         return ModelSpec(
             id = id,
@@ -255,18 +293,19 @@ class HuggingFaceClient {
             contextLength = 4096,
             paramCountStr = if (paramCount >= 1.0) "${paramCount}B" else "${(paramCount * 1000).toInt()}M",
             memoryRequirementStr = memReqStr,
-            description = "Dynamic Hugging Face model ($repoId) in $quant quantization. Recommended: $minDevices+ mobile devices.",
+            description = "Dynamic Hugging Face model ($repoId) in $quant. Distributed cluster recommended: $minDevices+ devices.",
             samplePrompt = "Explain the fundamental advantages of dynamic layer partitioning across distributed edge devices:",
             huggingFaceRepo = repoId,
             downloadUrl = downloadUrl,
-            fileName = fileName,
+            fileName = cleanFileName,
             fileSizeBytes = finalSizeBytes,
             fileFormat = "GGUF",
             recommendedMinDevices = minDevices,
             singleDeviceOomWarning = isMassive,
-            isStarterTestModel = paramCount < 0.2,
+            isStarterTestModel = false,
             quantization = quant,
             isSuitableForMobile = isSuitable,
+            isOnlineHfModel = true,
             downloadsCount = downloads,
             likesCount = likes
         )
@@ -274,15 +313,21 @@ class HuggingFaceClient {
 
     private fun extractQuantization(fileName: String): String {
         val lower = fileName.lowercase()
+
+        // Explicit check for bf16 first so it isn't masked by f16
+        if (lower.contains("bf16")) return "BF16"
+        if (lower.contains("fp16") || lower.contains("f16")) return "FP16"
+        if (lower.contains("fp32")) return "FP32"
+
         val quants = listOf(
-            "q2_k_s", "q2_k_l", "q2_k",
-            "q3_k_s", "q3_k_m", "q3_k_l", "q3_k_xl", "q3_k",
+            "q2_k_s", "q2_k_l", "q2_k", "q2_0",
+            "q3_k_s", "q3_k_m", "q3_k_l", "q3_k_xl", "q3_k", "q3_0",
             "q4_k_s", "q4_k_m", "q4_k_l", "q4_k", "q4_0_4_4", "q4_0_4_8", "q4_0_8_8", "q4_0", "q4_1",
             "q5_k_s", "q5_k_m", "q5_k_l", "q5_k", "q5_0", "q5_1",
             "q6_k_l", "q6_k",
             "q8_0", "q8_k",
-            "iq1_s", "iq1_m", "iq2_xxs", "iq2_xs", "iq2_s", "iq2_m", "iq3_xxs", "iq3_xs", "iq3_s", "iq3_m", "iq4_nl", "iq4_xs",
-            "fp16", "f16", "bf16", "fp32"
+            "iq1_s", "iq1_m", "iq2_xxs", "iq2_xs", "iq2_s", "iq2_m",
+            "iq3_xxs", "iq3_xs", "iq3_s", "iq3_m", "iq4_nl", "iq4_xs"
         )
 
         for (q in quants) {

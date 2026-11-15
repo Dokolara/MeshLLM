@@ -401,6 +401,11 @@ object ModelCatalog {
         preferredQuant: String? = null
     ): List<ModelSpec> {
         val pool = getAllModels()
+        val cleanQuery = query?.trim()?.lowercase() ?: ""
+        val queryTokens = if (cleanQuery.isNotEmpty()) {
+            cleanQuery.split(Regex("[\\s\\-_/.]+")).filter { it.isNotBlank() }
+        } else emptyList()
+
         return pool.filter { model ->
             // Suitability check
             if (suitableOnly && !model.isSuitableForMobile) {
@@ -416,14 +421,20 @@ object ModelCatalog {
             val matchQuant = preferredQuant.isNullOrEmpty() ||
                     model.quantization.contains(preferredQuant, ignoreCase = true)
 
-            // Search query check
-            val matchQuery = query.isNullOrBlank() ||
-                    model.name.contains(query, ignoreCase = true) ||
-                    model.provider.contains(query, ignoreCase = true) ||
-                    model.description.contains(query, ignoreCase = true) ||
-                    model.paramCountStr.contains(query, ignoreCase = true) ||
-                    (model.huggingFaceRepo?.contains(query, ignoreCase = true) == true) ||
-                    model.quantization.contains(query, ignoreCase = true)
+            // Search query check: every token in the query must match in at least one searchable field
+            val matchQuery = if (queryTokens.isEmpty()) {
+                true
+            } else {
+                val searchableText = (model.name + " " +
+                        model.provider + " " +
+                        model.description + " " +
+                        model.paramCountStr + " " +
+                        (model.huggingFaceRepo ?: "") + " " +
+                        model.fileName + " " +
+                        model.quantization).lowercase()
+
+                queryTokens.all { token -> searchableText.contains(token) }
+            }
 
             matchCategory && matchQuant && matchQuery
         }

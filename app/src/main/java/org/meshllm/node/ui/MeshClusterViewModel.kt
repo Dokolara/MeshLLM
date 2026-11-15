@@ -229,39 +229,61 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun fetchHuggingFaceCatalog(forceRefresh: Boolean = false) {
-        viewModelScope.launch {
+    private var searchDebounceJob: Job? = null
+
+    fun fetchHuggingFaceCatalog(forceRefresh: Boolean = false, onResult: ((Int) -> Unit)? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
             _isHfSearching.value = true
             try {
                 val models = huggingFaceClient.fetchPopularModels(limit = 40)
                 if (models.isNotEmpty()) {
                     ModelCatalog.addDynamicModels(models, getApplication())
-                    refreshCatalog()
+                    withContext(Dispatchers.Main) {
+                        refreshCatalog()
+                        onResult?.invoke(models.size)
+                    }
                     Log.i(TAG, "Dynamic Hugging Face models synced: ${models.size} models loaded")
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onResult?.invoke(0)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed fetching Hugging Face catalog: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    onResult?.invoke(0)
+                }
             } finally {
                 _isHfSearching.value = false
             }
         }
     }
 
-    fun searchHuggingFace(query: String) {
+    fun searchHuggingFace(query: String, onResult: ((Int) -> Unit)? = null) {
         val cleanQuery = query.trim()
         if (cleanQuery.length < 2) return
 
         hfSearchJob?.cancel()
-        hfSearchJob = viewModelScope.launch {
+        hfSearchJob = viewModelScope.launch(Dispatchers.IO) {
             _isHfSearching.value = true
             try {
-                val results = huggingFaceClient.searchModels(cleanQuery, limit = 25)
+                val results = huggingFaceClient.searchModels(cleanQuery, limit = 30)
                 if (results.isNotEmpty()) {
                     ModelCatalog.addDynamicModels(results, getApplication())
-                    refreshCatalog()
+                    withContext(Dispatchers.Main) {
+                        refreshCatalog()
+                        onResult?.invoke(results.size)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onResult?.invoke(0)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error querying Hugging Face API: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    onResult?.invoke(0)
+                }
             } finally {
                 _isHfSearching.value = false
             }
@@ -295,9 +317,13 @@ class MeshClusterViewModel(application: Application) : AndroidViewModel(applicat
         _preferredQuantFilter.value = preferredQuant
         refreshCatalog()
 
-        // If user is searching, also query Hugging Face directly in real-time
+        // Debounced search on text typing (400ms delay)
         if (query.trim().length >= 2) {
-            searchHuggingFace(query)
+            searchDebounceJob?.cancel()
+            searchDebounceJob = viewModelScope.launch {
+                delay(400)
+                searchHuggingFace(query)
+            }
         }
     }
 
