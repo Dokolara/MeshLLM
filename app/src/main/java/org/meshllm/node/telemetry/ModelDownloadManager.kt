@@ -198,6 +198,21 @@ class ModelDownloadManager(
             val destFile = getModelFile(model)
             val partFile = File(destFile.parentFile, "${destFile.name}.part")
 
+            // 0. Storage Space Pre-flight Verification for Large Models (>5GB)
+            val availableSpace = destFile.parentFile?.usableSpace ?: Long.MAX_VALUE
+            val requiredBytes = if (model.fileSizeBytes > 0L) model.fileSizeBytes else 500_000_000L
+            val safetyMargin = 300_000_000L // 300MB buffer for OS operation
+            if (availableSpace < (requiredBytes + safetyMargin)) {
+                val reqGb = String.format("%.2f", requiredBytes.toDouble() / (1024.0 * 1024.0 * 1024.0))
+                val freeGb = String.format("%.2f", availableSpace.toDouble() / (1024.0 * 1024.0 * 1024.0))
+                val errMsg = "Insufficient storage space: Model requires $reqGb GB, but device only has $freeGb GB free"
+                Log.e(TAG, errMsg)
+                val failedState = DownloadState.Failed(model.id, errMsg)
+                updateState(model.id, failedState)
+                withContext(Dispatchers.Main) { onProgress?.invoke(failedState) }
+                return@launch
+            }
+
             // 1. Check if a peer (Master Node) has this model available locally
             var effectiveUrl = model.downloadUrl
             var downloadSource = "Internet (Hugging Face)"
@@ -330,14 +345,14 @@ class ModelDownloadManager(
             val totalBytes = if (serverContentLength > 0) startingByte + serverContentLength else model.fileSizeBytes
 
             var bytesCopied = startingByte
-            val buffer = ByteArray(128 * 1024) // 128KB buffer for optimal throughput without GC churn
+            val buffer = ByteArray(256 * 1024) // 256KB buffer for optimal multi-gigabyte throughput without GC churn
             var lastUpdateMs = System.currentTimeMillis()
             var bytesSinceLastUpdate: Long = 0
             var bytesSinceFlush: Long = 0
             var currentSpeed = 0.0
 
-            java.io.BufferedInputStream(body.byteStream(), 256 * 1024).use { input ->
-                java.io.BufferedOutputStream(FileOutputStream(partFile, isPartial), 256 * 1024).use { output ->
+            java.io.BufferedInputStream(body.byteStream(), 512 * 1024).use { input ->
+                java.io.BufferedOutputStream(FileOutputStream(partFile, isPartial), 512 * 1024).use { output ->
                     var read: Int
                     while (input.read(buffer).also { read = it } != -1) {
                         output.write(buffer, 0, read)
@@ -345,8 +360,8 @@ class ModelDownloadManager(
                         bytesSinceLastUpdate += read
                         bytesSinceFlush += read
 
-                        // Periodically flush buffer to disk every 1MB to prevent flash write stalls
-                        if (bytesSinceFlush >= 1024 * 1024) {
+                        // Periodically flush buffer to disk every 4MB to prevent flash write stalls on >5GB downloads
+                        if (bytesSinceFlush >= 4 * 1024 * 1024) {
                             output.flush()
                             bytesSinceFlush = 0L
                         }
@@ -377,10 +392,21 @@ class ModelDownloadManager(
                 }
             }
 
-            // Rename part file to dest file
+            // Rename part file to dest file with atomic fallback
             if (partFile.exists()) {
                 if (destFile.exists()) destFile.delete()
-                partFile.renameTo(destFile)
+                val renamed = partFile.renameTo(destFile)
+                if (!renamed && partFile.exists()) {
+                    try {
+                        java.nio.file.Files.move(
+                            partFile.toPath(),
+                            destFile.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                        )
+                    } catch (mvEx: Exception) {
+                        Log.w(TAG, "Files.move fallback: ${mvEx.message}")
+                    }
+                }
             }
 
             val finalSizeMb = Math.round((destFile.length().toDouble() / (1024.0 * 1024.0)) * 10.0) / 10.0

@@ -34,6 +34,29 @@ class SentencePieceTokenizer {
         }
     }
 
+    /**
+     * Seeds tokenizer directly from a list of tokens extracted from GGUF metadata.
+     * Supports massive vocabularies (e.g. 128k Llama-3, 152k Qwen-2.5) without binary files.
+     */
+    fun loadFromTokens(tokens: List<String>): Boolean {
+        if (tokens.isEmpty()) return false
+        vocab.clear()
+        scores.clear()
+        tokenToId.clear()
+        var maxLen = 32
+
+        for ((idx, tok) in tokens.withIndex()) {
+            vocab.add(tok)
+            scores.add(0.0f)
+            tokenToId[tok] = idx
+            if (tok.length > maxLen) {
+                maxLen = tok.length
+            }
+        }
+        maxTokenLength = maxLen
+        return vocab.isNotEmpty()
+    }
+
     fun loadFromStream(inputStream: InputStream): Boolean {
         return try {
             val bytes = inputStream.readBytes()

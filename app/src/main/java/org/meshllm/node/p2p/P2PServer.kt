@@ -152,7 +152,9 @@ class P2PServer(
     private fun handleConnection(socket: Socket) {
         try {
             socket.tcpNoDelay = true
-            socket.soTimeout = 15000
+            socket.soTimeout = 120_000 // 2 minutes to accommodate heavy prompt prefill on >5GB models
+            socket.receiveBufferSize = 512 * 1024
+            socket.sendBufferSize = 512 * 1024
             val input = BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.UTF_8))
             val output = socket.getOutputStream()
 
@@ -194,18 +196,18 @@ class P2PServer(
                     }
                 }
 
-                // AETHER-LINK: Read body safely by bytes (handling multi-byte UTF-8 without socket hang)
+                // AETHER-LINK: Read body safely and efficiently without per-chunk string allocation
                 val contentLength = headers["content-length"]?.toIntOrNull() ?: 0
                 val body = if (contentLength > 0) {
                     val buffer = StringBuilder(contentLength)
-                    var readTotal = 0
-                    val chunk = CharArray(minOf(4096, contentLength))
-                    while (readTotal < contentLength) {
-                        val toRead = minOf(chunk.size, contentLength - readTotal)
+                    var readChars = 0
+                    val chunk = CharArray(minOf(65536, contentLength))
+                    while (readChars < contentLength) {
+                        val toRead = minOf(chunk.size, contentLength - readChars)
                         val r = input.read(chunk, 0, toRead)
                         if (r == -1) break
                         buffer.append(chunk, 0, r)
-                        readTotal += String(chunk, 0, r).toByteArray(Charsets.UTF_8).size
+                        readChars += r
                     }
                     buffer.toString()
                 } else {
@@ -445,12 +447,12 @@ class P2PServer(
         if (isHeadOnly) return
 
         try {
-            // Generous timeout and socket buffering for large model transfers across LAN Wi-Fi
-            socket.soTimeout = 120_000
+            // Generous timeout (5 minutes) and socket buffering for large model transfers (>5GB) across LAN Wi-Fi
+            socket.soTimeout = 300_000
             socket.keepAlive = true
-            socket.sendBufferSize = 512 * 1024
+            socket.sendBufferSize = 1024 * 1024
 
-            java.io.BufferedInputStream(java.io.FileInputStream(file), 256 * 1024).use { bis ->
+            java.io.BufferedInputStream(java.io.FileInputStream(file), 512 * 1024).use { bis ->
                 if (startOffset > 0L) {
                     var skipped = 0L
                     while (skipped < startOffset) {
@@ -459,8 +461,8 @@ class P2PServer(
                         skipped += n
                     }
                 }
-                java.io.BufferedOutputStream(output, 256 * 1024).use { bos ->
-                    val buffer = ByteArray(256 * 1024)
+                java.io.BufferedOutputStream(output, 512 * 1024).use { bos ->
+                    val buffer = ByteArray(512 * 1024)
                     var bytesRemaining = contentLength
                     var bytesSinceFlush = 0L
                     while (bytesRemaining > 0L && isRunning) {
@@ -470,7 +472,7 @@ class P2PServer(
                         bos.write(buffer, 0, read)
                         bytesRemaining -= read
                         bytesSinceFlush += read
-                        if (bytesSinceFlush >= 1024 * 1024) {
+                        if (bytesSinceFlush >= 4 * 1024 * 1024) {
                             bos.flush()
                             bytesSinceFlush = 0L
                         }

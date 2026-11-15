@@ -72,8 +72,9 @@ class GGUFParser {
         try {
             RandomAccessFile(file, "r").use { raf ->
                 val channel = raf.channel
-                // Map the first 4MB which comfortably holds header and key-value metadata
-                val mapSize = Math.min(channel.size(), 4L * 1024 * 1024)
+                // Map up to 64MB which comfortably holds headers, key-value metadata,
+                // and massive tokenizers (e.g. 128k Llama-3, 152k Qwen-2.5, DeepSeek R1)
+                val mapSize = Math.min(channel.size(), 64L * 1024 * 1024)
                 val buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, mapSize)
                 buffer.order(ByteOrder.LITTLE_ENDIAN)
 
@@ -150,13 +151,14 @@ class GGUFParser {
                             val elemCount = buffer.long
                             if (key == "tokenizer.ggml.tokens" && elemType == TYPE_STRING) {
                                 vocabSize = elemCount.toInt()
-                                val previewLimit = Math.min(elemCount, 50L)
+                                val previewLimit = Math.min(elemCount, 200L)
                                 for (t in 0 until previewLimit) {
                                     val tokenStr = readGGUFString(buffer)
                                     if (tokenStr != null) sampleVocab.add(tokenStr)
                                 }
                                 // Skip remaining string tokens in array to conserve parse time
                                 for (t in previewLimit until elemCount) {
+                                    if (buffer.remaining() < 8) break
                                     val len = buffer.long
                                     if (len in 0..buffer.remaining()) {
                                         buffer.position(buffer.position() + len.toInt())
@@ -188,10 +190,38 @@ class GGUFParser {
                     } else break
                 }
 
-                // Derive fallback architecture specs if not explicitly specified in metadata
-                if (blockCount <= 0) blockCount = if (architecture.contains("14b", true)) 48 else if (architecture.contains("7b", true) || architecture.contains("8b", true)) 32 else 24
-                if (hiddenDim <= 0) hiddenDim = if (architecture.contains("14b", true)) 5120 else if (architecture.contains("7b", true) || architecture.contains("8b", true)) 4096 else 896
-                if (headCount <= 0) headCount = if (architecture.contains("14b", true)) 40 else 32
+                // Derive fallback architecture specs for large models (>5GB, 14B, 32B, 70B)
+                val lowerArch = (architecture + " " + modelName).lowercase()
+                if (blockCount <= 0) {
+                    blockCount = when {
+                        lowerArch.contains("70b") || lowerArch.contains("72b") -> 80
+                        lowerArch.contains("32b") || lowerArch.contains("35b") -> 64
+                        lowerArch.contains("24b") || lowerArch.contains("20b") || lowerArch.contains("27b") -> 40
+                        lowerArch.contains("14b") || lowerArch.contains("13b") || lowerArch.contains("15b") -> 48
+                        lowerArch.contains("7b") || lowerArch.contains("8b") -> 32
+                        lowerArch.contains("3b") || lowerArch.contains("4b") -> 28
+                        lowerArch.contains("1b") || lowerArch.contains("1.5b") || lowerArch.contains("2b") -> 24
+                        else -> 24
+                    }
+                }
+                if (hiddenDim <= 0) {
+                    hiddenDim = when {
+                        lowerArch.contains("70b") || lowerArch.contains("72b") -> 8192
+                        lowerArch.contains("32b") || lowerArch.contains("14b") || lowerArch.contains("13b") || lowerArch.contains("24b") -> 5120
+                        lowerArch.contains("7b") || lowerArch.contains("8b") -> 4096
+                        lowerArch.contains("3b") || lowerArch.contains("4b") -> 3072
+                        lowerArch.contains("1b") || lowerArch.contains("1.5b") || lowerArch.contains("2b") -> 2048
+                        else -> 896
+                    }
+                }
+                if (headCount <= 0) {
+                    headCount = when {
+                        lowerArch.contains("70b") || lowerArch.contains("72b") -> 64
+                        lowerArch.contains("32b") || lowerArch.contains("14b") || lowerArch.contains("24b") -> 40
+                        lowerArch.contains("7b") || lowerArch.contains("8b") -> 32
+                        else -> 16
+                    }
+                }
 
                 Log.i(TAG, "Parsed GGUF header for ${file.name}: arch=$architecture, layers=$blockCount, dim=$hiddenDim, tensors=$tensorCount")
 
@@ -258,5 +288,66 @@ class GGUFParser {
                 }
             }
         }
+    }
+
+    /**
+     * Extracts full tokenizer vocabulary tokens directly from a GGUF model file.
+     * Supports massive vocabularies (e.g. 128k Llama-3, 152k Qwen-2.5) up to [maxTokens].
+     */
+    fun extractVocabulary(file: File, maxTokens: Int = 160_000): List<String> {
+        if (!file.exists() || file.length() < 32) return emptyList()
+
+        try {
+            RandomAccessFile(file, "r").use { raf ->
+                val channel = raf.channel
+                val mapSize = Math.min(channel.size(), 64L * 1024 * 1024)
+                val buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, mapSize)
+                buffer.order(ByteOrder.LITTLE_ENDIAN)
+
+                val magic = buffer.int
+                if (magic != GGUF_MAGIC) return emptyList()
+
+                val version = buffer.int
+                if (version !in 1..4) return emptyList()
+
+                buffer.long // tensorCount
+                val kvCount = buffer.long
+
+                for (i in 0 until kvCount) {
+                    if (buffer.remaining() < 12) break
+                    val key = readGGUFString(buffer) ?: break
+                    val vType = buffer.int
+
+                    when (vType) {
+                        TYPE_UINT8, TYPE_INT8, TYPE_BOOL -> buffer.get()
+                        TYPE_UINT16, TYPE_INT16 -> buffer.short
+                        TYPE_UINT32, TYPE_INT32, TYPE_FLOAT32 -> buffer.int
+                        TYPE_UINT64, TYPE_INT64, TYPE_FLOAT64 -> buffer.long
+                        TYPE_STRING -> { readGGUFString(buffer) }
+                        TYPE_ARRAY -> {
+                            val elemType = buffer.int
+                            val elemCount = buffer.long
+                            if (key == "tokenizer.ggml.tokens" && elemType == TYPE_STRING) {
+                                val limit = Math.min(elemCount, maxTokens.toLong()).toInt()
+                                val tokens = ArrayList<String>(limit)
+                                for (t in 0 until limit) {
+                                    val tokenStr = readGGUFString(buffer)
+                                    if (tokenStr != null) {
+                                        tokens.add(tokenStr)
+                                    } else break
+                                }
+                                return tokens
+                            } else {
+                                skipGGUFArray(buffer, elemType, elemCount)
+                            }
+                        }
+                        else -> break
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed extracting vocabulary from GGUF ${file.name}: ${e.message}")
+        }
+        return emptyList()
     }
 }

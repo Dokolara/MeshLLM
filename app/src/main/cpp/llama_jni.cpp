@@ -205,8 +205,12 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativeLoadModel(
         model_params.split_mode = LLAMA_SPLIT_MODE_NONE;
         model_params.start_layer = start_layer;
         model_params.end_layer = end_layer;
-        if (sizeof(void*) == 4 || end_layer >= 0) {
+        // On 64-bit systems, MMAP is zero-copy and virtual-memory backed, allowing >5GB models
+        // to be partitioned without consuming physical heap RAM. 32-bit systems fall back to NONE.
+        if (sizeof(void*) == 4) {
             model_params.load_mode = LLAMA_LOAD_MODE_NONE;
+        } else {
+            model_params.load_mode = LLAMA_LOAD_MODE_MMAP;
         }
 
         llama_model *loaded_model = nullptr;
@@ -232,10 +236,11 @@ Java_org_meshllm_node_engine_LlamaNativeBridge_nativeLoadModel(
         g_start_layer = start_layer;
         g_end_layer = end_layer;
 
-        // Context setup optimized for pure mobile CPU execution
+        // Context setup optimized for pure mobile CPU execution and large models
         llama_context_params ctx_params = llama_context_default_params();
-        ctx_params.n_ctx = 512;
-        ctx_params.n_batch = 512;
+        ctx_params.n_ctx = 2048;
+        ctx_params.n_batch = 2048;
+        ctx_params.n_ubatch = 512;
         ctx_params.n_threads = optimal_threads;
         ctx_params.n_threads_batch = optimal_threads;
         ctx_params.type_k = GGML_TYPE_F16;

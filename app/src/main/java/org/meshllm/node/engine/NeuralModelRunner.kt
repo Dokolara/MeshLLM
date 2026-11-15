@@ -141,6 +141,7 @@ class NeuralModelRunner {
                     val gpuStr = if (nativeBridge.isGpuAccelerated()) " [GPU: Vulkan]" else " [CPU]"
                     weightFormatDescription = "Native llama.cpp$gpuStr • ${file.name}$layerInfo • $allocatedRamMb MB in RAM"
                     lastInferenceTimestamp = System.currentTimeMillis()
+                    loadTokenizerForModel(file, 32000)
                     Log.i(TAG, "Loaded model via native llama.cpp: $weightFormatDescription")
                     return true
                 } else {
@@ -185,6 +186,19 @@ class NeuralModelRunner {
     }
 
     private fun loadTokenizerForModel(modelFile: File, vocabSize: Int) {
+        // 1. Direct extraction from GGUF metadata (supports 128k Llama-3, 152k Qwen-2.5, DeepSeek)
+        if (modelFile.name.endsWith(".gguf", ignoreCase = true)) {
+            try {
+                val tokens = GGUFParser().extractVocabulary(modelFile)
+                if (tokens.isNotEmpty() && spTokenizer.loadFromTokens(tokens)) {
+                    Log.i(TAG, "Loaded GGUF tokenizer directly from ${modelFile.name} (Vocab: ${spTokenizer.vocabSize})")
+                    return
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not extract vocabulary directly from ${modelFile.name}: ${e.message}")
+            }
+        }
+
         val tokName = if (vocabSize <= 512) "tok512.bin" else "tokenizer.bin"
         val candidates = listOf(
             File(modelFile.parentFile, tokName),

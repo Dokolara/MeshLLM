@@ -263,19 +263,20 @@ class HuggingFaceClient {
 
         val isMassive = paramCount >= 7.0
         val minDevices = when {
-            paramCount >= 14.0 -> 6
-            paramCount >= 7.0 -> 4
+            paramCount >= 25.0 -> 8
+            paramCount >= 13.0 -> 6
+            paramCount >= 6.0 -> 4
             paramCount >= 2.0 -> 2
             else -> 1
         }
 
-        // Assess suitability for distributed mobile inference
+        // Assess suitability for distributed mobile inference (supports massive models up to 35B across mesh)
         val lowerFile = cleanFileName.lowercase()
         val isMmproj = lowerFile.contains("mmproj")
         val isSplit = lowerFile.contains("-of-") || lowerFile.contains(".part")
         val isGguf = lowerFile.endsWith(".gguf")
         val isRawFloat = quant == "FP16" || quant == "BF16" || quant == "FP32"
-        val isReasonableParam = paramCount in 0.01..20.0
+        val isReasonableParam = paramCount in 0.01..35.0
         val isStandardQuant = quant.startsWith("Q") || quant.startsWith("IQ") ||
                 SUITABLE_QUANTS.any { quant.contains(it, ignoreCase = true) }
 
@@ -349,10 +350,11 @@ class HuggingFaceClient {
 
     private fun inferLayers(paramCount: Double): Int {
         return when {
+            paramCount >= 65.0 -> 80
             paramCount >= 30.0 -> 64
-            paramCount >= 14.0 -> 48
-            paramCount >= 8.0 -> 32
-            paramCount >= 6.0 -> 28
+            paramCount >= 20.0 -> 40
+            paramCount >= 13.0 -> 48
+            paramCount >= 6.0 -> 32
             paramCount >= 3.0 -> 28
             paramCount >= 1.0 -> 24
             paramCount >= 0.5 -> 24
@@ -363,8 +365,9 @@ class HuggingFaceClient {
 
     private fun inferHiddenDim(paramCount: Double): Int {
         return when {
-            paramCount >= 14.0 -> 5120
-            paramCount >= 7.0 -> 4096
+            paramCount >= 65.0 -> 8192
+            paramCount >= 13.0 -> 5120
+            paramCount >= 6.0 -> 4096
             paramCount >= 3.0 -> 3072
             paramCount >= 1.0 -> 2048
             paramCount >= 0.5 -> 896
